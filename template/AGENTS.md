@@ -1,0 +1,31 @@
+# {{PROJECT_NAME}}: start here (entry point for humans and AI agents)
+
+This repository holds the **living notes** of {{PROJECT_NAME}}: the single source of truth for its current state, procedures, decisions and lessons. Read this file first, in any session, from any starting folder.
+
+> Claude Code reads `CLAUDE.md`; most other agents read `AGENTS.md`. Keep this file as the real content and make `CLAUDE.md` contain only the line `@AGENTS.md` (or a symlink).
+
+## Read order (about five files)
+1. `notes/working-agreement.md` : how to work here (approvals, safety rules, things never to do).
+2. `notes/sync-tracker.md` : what is pending, what is stale, which copies are behind, the "what to update when X changes" matrix.
+3. `notes/state.md` : the master record (headline facts, open items).
+4. `notes/runbook.md` : the how-to for the task at hand, and the lessons list.
+5. The entity note or newest handoff for what you will touch (`notes/*.md`, `notes/plans/`).
+
+## The five rules that must never be missed
+1. **Verify the live system before writing a fact; read a file just before you edit it** (never rewrite a file from memory).
+2. **Update the notes in the same session as the change**, using the matrix in the tracker, then commit: `tools/notes-commit "what changed and why"`. Commit after every update that is big enough to matter.
+3. **No secrets in this repository, ever.** Write where a secret lives, never its value. The commit hook will refuse obvious cases; do not rely on it.
+4. **Ask before changing, deleting or publishing anything**, say how to undo it, and keep a backup or a commit to return to.
+5. **Be honest in the notes**: date everything ({{TIMEZONE}}), mark what is not verified, and never mark a copy "synced" that was not. Put what is still pending in the tracker.
+
+## Tools
+- `tools/notes-commit "message"` : stage, check, commit (add `-p` to push the mirror).
+- `tools/notes-lint.py` : reference, heading, freshness, ledger and secret checks.
+- `tools/build-notes-map.py` : generate the navigable map with backlinks and history.
+- `tools/mirror-push.sh`, `tools/restore-drill.sh` : second copy and proof it can be restored.
+- Method: `docs/METHODOLOGY.md` (if present) or the Living Notes method it was copied from.
+
+## Project facts an agent needs immediately
+- Time zone for all dates: {{TIMEZONE}}.
+- Notes root: `notes/`. Deployed files are mirrored in `notes/scripts/`.
+- Owner / contact for decisions: {{OWNER}}.

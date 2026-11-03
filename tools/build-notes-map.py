@@ -1,0 +1,163 @@
+#!/usr/bin/env python3
+"""build-notes-map: generate a navigable static view of the notes (index, one page per note, backlinks, git history).
+
+  tools/build-notes-map.py [--root DIR] [--out DIR]        default out: <root>/notes-map  (gitignored, rebuilt on demand)
+
+What it produces
+  index.html        notes grouped by purpose, live search, the 15 latest commits
+  p/<slug>.html     each note rendered, with table of contents, 'mentions' and 'mentioned by' chips and its recent git history
+  raw/<slug>.md     the original files
+Relations are file-name mentions: a note that writes `runbook.md` in backticks (or plain text) mentions that note.
+It refuses to build if any note contains a secret-looking string (publication gate).
+Optional config: .living-notes-map.json  {"title": "...", "groups": [{"id","name","blurb","prefixes":["notes/plans/"]}], "hints": {"notes/state.md": "one line"}}
+Needs only the Python standard library; if the 'markdown' package is installed pages are rendered nicely, otherwise as preformatted text.
+"""
+import argparse, datetime, html, json, os, re, shutil, subprocess, sys
+
+SKIP_DIRS = {".git", "site", "notes-map", "node_modules", "__pycache__"}
+SECRET = re.compile(r"BEGIN [A-Z ]*PRIVATE KEY|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|xox[baprs]-[A-Za-z0-9-]{10,}|sk-[A-Za-z0-9]{32,}|"
+                    r"(?i:(password|passwd|passphrase|secret|token|api[_-]?key|psk))[\"']?\s*[:=]\s*[\"']?[A-Za-z0-9+/_=-]{20,}")
+DEFAULT_GROUPS = [
+    ("start", "Start here", "Read in this order: entry point, working agreement, tracker, master record, runbook.", ["AGENTS.md", "CLAUDE.md", "README.md", "notes/working-agreement.md", "notes/sync-tracker.md", "notes/state.md", "notes/runbook.md"]),
+    ("plans", "Plans, backlog and decisions", "What is parked, planned, waiting or decided.", ["notes/plans/"]),
+    ("logs", "Effort logs and incidents", "Chronological records of large efforts and incidents.", ["notes/logs/"]),
+    ("verify", "Verification", "Health check and test procedures.", ["notes/verification/"]),
+    ("artifacts", "Deployed artifacts", "Repository copies of what runs elsewhere (READMEs of bundles).", ["notes/scripts/"]),
+    ("archive", "Archive", "Old detail kept for history.", ["notes/archive/"]),
+    ("docs", "Method", "How the notes are kept.", ["docs/"]),
+    ("other", "Other notes", "Everything else (entity notes and new files appear here automatically).", []),
+]
+CSS = """:root{--bg:#f4f6f8;--panel:#fff;--fg:#1c252c;--muted:#5d6b76;--line:#d3dadf;--accent:#0b6e6e;--code:#f1f4f6}
+@media (prefers-color-scheme:dark){:root{--bg:#12171b;--panel:#1a2126;--fg:#e3e9ed;--muted:#93a3ae;--line:#2b363e;--accent:#4fc3c3;--code:#161c20}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 system-ui,sans-serif}a{color:var(--accent)}
+.wrap{max-width:1100px;margin:0 auto;padding:18px 16px 50px}h1{font-size:24px;margin:0 0 6px}.sub{color:var(--muted);margin:0 0 14px}
+input{font:inherit;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--fg);width:100%;max-width:360px}
+.grp{background:var(--panel);border:1px solid var(--line);border-radius:8px;margin:12px 0;padding:6px 14px}.grp h2{font-size:16px;margin:8px 0 2px}.grp p{margin:0 0 6px;color:var(--muted);font-size:13px}
+.note{display:block;padding:7px 0;border-top:1px solid var(--line);text-decoration:none;color:var(--fg)}.note small{display:block;color:var(--muted)}.note b{color:var(--accent)}
+article{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 24px 24px}article code{background:var(--code);padding:1px 5px;border-radius:4px}
+article pre{background:var(--code);padding:12px;overflow:auto;border-radius:6px}article table{display:block;overflow-x:auto;border-collapse:collapse}article th,article td{border:1px solid var(--line);padding:5px 9px}
+.rel{border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin:10px 0;font-size:13px;background:var(--bg)}.chip{display:inline-block;margin:2px 4px 2px 0;padding:1px 9px;border-radius:99px;border:1px solid var(--line);text-decoration:none;background:var(--panel)}
+.recent{color:var(--muted);font-size:13px}.recent code{font:12px ui-monospace,monospace}"""
+
+
+def sh(args, cwd):
+    try:
+        return subprocess.run(args, cwd=cwd, capture_output=True, text=True, timeout=30).stdout
+    except Exception:
+        return ""
+
+
+def slug(rel):
+    return re.sub(r"[^A-Za-z0-9._-]+", "-", rel[:-3]).strip("-")
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--root", default=".")
+    ap.add_argument("--out", default=None)
+    a = ap.parse_args()
+    root = sh(["git", "rev-parse", "--show-toplevel"], a.root).strip() or os.path.abspath(a.root)
+    out = a.out or os.path.join(root, "notes-map")
+    cfg = {}
+    cp = os.path.join(root, ".living-notes-map.json")
+    if os.path.exists(cp):
+        cfg = json.load(open(cp, encoding="utf-8"))
+    title = cfg.get("title") or (os.path.basename(root) + " notes")
+    hints = cfg.get("hints", {})
+    groups = [(g["id"], g["name"], g.get("blurb", ""), g.get("prefixes", [])) for g in cfg["groups"]] if "groups" in cfg else DEFAULT_GROUPS
+    try:
+        import markdown as md_lib
+    except Exception:
+        md_lib = None
+
+    files = []
+    for dp, dn, fn in os.walk(root):
+        dn[:] = sorted(d for d in dn if d not in SKIP_DIRS and not os.path.relpath(os.path.join(dp, d), root).startswith("template"))
+        for f in sorted(fn):
+            if f.endswith(".md"):
+                files.append(os.path.relpath(os.path.join(dp, f), root))
+    info = {}
+    for rel in files:
+        text = open(os.path.join(root, rel), encoding="utf-8", errors="replace").read()
+        m = SECRET.search(text)
+        if m:
+            sys.exit(f"REFUSING to build: {rel} looks like it contains a secret near: {m.group(0)[:30]}...")
+        h1 = re.search(r"^#\s+(.+)$", text, re.M)
+        ttl = re.sub(r"[`*_]", "", h1.group(1)).strip() if h1 else os.path.basename(rel)
+        body = text[h1.end():] if h1 else text
+        para = next((l.strip() for l in body.split("\n") if l.strip() and not l.lstrip().startswith(("#", "|", "```", ">", "-", "*"))), "")
+        para = re.sub(r"[`*_]|\[([^\]]+)\]\([^)]*\)", lambda mm: mm.group(1) or "", para)
+        group = "other"
+        for gid, _, _, prefixes in groups:
+            if any(rel == p or (p.endswith("/") and rel.startswith(p)) for p in prefixes):
+                group = gid
+                break
+        info[rel] = dict(id=slug(rel), rel=rel, name=os.path.basename(rel), title=ttl, group=group, text=text, out={}, inn={},
+                         hint=hints.get(rel) or (para[:170] + ("..." if len(para) > 170 else "")),
+                         mtime=os.path.getmtime(os.path.join(root, rel)), size=len(text.encode("utf-8")))
+    by_name = {}
+    for rel, d in info.items():
+        by_name.setdefault(d["name"], []).append(rel)
+    linkable = {n: v[0] for n, v in by_name.items() if len(v) == 1 and n != "README.md"}
+    if linkable:
+        name_re = re.compile(r"(?<![\w./-])(" + "|".join(re.escape(n) for n in sorted(linkable, key=len, reverse=True)) + r")(?![\w-])")
+        for rel, d in info.items():
+            for mm in name_re.finditer(d["text"]):
+                tgt = linkable[mm.group(1)]
+                if tgt != rel:
+                    info[tgt]["inn"][d["id"]] = info[tgt]["inn"].get(d["id"], 0) + 1
+                    d["out"][info[tgt]["id"]] = d["out"].get(info[tgt]["id"], 0) + 1
+    byid = {d["id"]: d for d in info.values()}
+
+    def log_rows(extra):
+        rows = [l.split("\t", 2) for l in sh(["git", "log", *extra], root).splitlines()]
+        return [r for r in rows if len(r) == 3]
+
+    shutil.rmtree(out, ignore_errors=True)
+    os.makedirs(os.path.join(out, "p")); os.makedirs(os.path.join(out, "raw"))
+    for rel, d in info.items():
+        if md_lib:
+            m = md_lib.Markdown(extensions=["tables", "fenced_code", "toc", "sane_lists"])
+            body = m.convert(d["text"]); toc = m.toc
+            body = re.sub(r"<code>([^<]+)</code>", lambda mm: (f'<a href="{byid[info[linkable[mm.group(1)]]["id"]]["id"]}.html"><code>{mm.group(1)}</code></a>'
+                          if mm.group(1) in linkable and linkable[mm.group(1)] != rel else mm.group(0)), body)
+        else:
+            body, toc = "<pre>" + html.escape(d["text"]) + "</pre>", ""
+        chips = lambda mp, cls: "".join(f'<a class="chip" href="{i}.html">{html.escape(byid[i]["name"])} <small>{n}</small></a>' for i, n in sorted(mp.items(), key=lambda kv: -kv[1]))
+        relh = ""
+        if d["out"]: relh += "<div><b>Mentions</b> " + chips(d["out"], "o") + "</div>"
+        if d["inn"]: relh += "<div><b>Mentioned by</b> " + chips(d["inn"], "i") + "</div>"
+        hist = log_rows(["--follow", "-n", "12", "--format=%h\t%as\t%s", "--", rel])
+        histh = ("<details class='rel'><summary><b>History</b> (%d recent changes)</summary><ul>%s</ul></details>" % (len(hist), "".join(f"<li><code>{h}</code> {dt} &middot; {html.escape(s)}</li>" for h, dt, s in hist))) if hist else ""
+        age = datetime.date.fromtimestamp(d["mtime"]).isoformat()
+        page = (f'<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{html.escape(d["title"])}</title><style>{CSS}</style></head><body><div class="wrap">'
+                f'<p><a href="../index.html">&larr; {html.escape(title)}</a> &middot; <code>{html.escape(rel)}</code> &middot; {d["size"]//1024 or 1} KB &middot; edited {age} &middot; <a href="../raw/{d["id"]}.md">raw</a></p>'
+                f'<p class="sub">{html.escape(d["hint"])}</p>{"<div class=rel>"+relh+"</div>" if relh else ""}{histh}<details class="rel"><summary><b>On this page</b></summary>{toc}</details><article>{body}</article></div></body></html>')
+        open(os.path.join(out, "p", d["id"] + ".html"), "w", encoding="utf-8").write(page)
+        shutil.copy(os.path.join(root, rel), os.path.join(out, "raw", d["id"] + ".md"))
+
+    recent = log_rows(["-n", "15", "--format=%h\t%as\t%s"])
+    sections = []
+    for gid, gname, blurb, prefixes in groups:
+        items = [d for d in info.values() if d["group"] == gid]
+        if prefixes and gid != "other":
+            order = {p: i for i, p in enumerate(prefixes)}
+            items.sort(key=lambda d: (order.get(d["rel"], 99), d["rel"]))
+        else:
+            items.sort(key=lambda d: d["rel"])
+        if not items:
+            continue
+        rows = "".join(f'<a class="note" href="p/{d["id"]}.html" data-s="{html.escape((d["rel"]+" "+d["title"]+" "+d["hint"]).lower())}"><b>{html.escape(d["name"])}</b> &middot; {html.escape(d["title"])}<small>{html.escape(d["rel"])} &mdash; {html.escape(d["hint"])}</small></a>' for d in items)
+        sections.append(f'<section class="grp"><h2>{html.escape(gname)} ({len(items)})</h2><p>{html.escape(blurb)}</p>{rows}</section>')
+    rec = ("<div class='recent'><h2>Recent changes</h2><ul>%s</ul></div>" % "".join(f"<li><code>{h}</code> {dt} &middot; {html.escape(s)}</li>" for h, dt, s in recent)) if recent else ""
+    built = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    index = (f'<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{html.escape(title)}</title><style>{CSS}</style></head><body><div class="wrap">'
+             f'<h1>{html.escape(title)}</h1><p class="sub">{len(info)} notes. Built {built}. Search filters the list; open a note to see what it mentions, what mentions it and how it changed.</p>'
+             f'<p><input id="q" type="search" placeholder="Search names, titles, hints..." aria-label="Search notes"></p>{"".join(sections)}{rec}</div>'
+             "<script>const q=document.getElementById('q');q.addEventListener('input',()=>{const t=q.value.toLowerCase();document.querySelectorAll('.note').forEach(n=>{n.style.display=n.dataset.s.includes(t)?'':'none'});document.querySelectorAll('.grp').forEach(g=>{g.style.display=[...g.querySelectorAll('.note')].some(n=>n.style.display!=='none')?'':'none'})})</script></body></html>")
+    open(os.path.join(out, "index.html"), "w", encoding="utf-8").write(index)
+    print(f"notes map: {len(info)} notes, {sum(len(d['out']) for d in info.values())} relations -> {out}/index.html")
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,42 @@
+#!/bin/bash
+# pre-commit: refuse a commit whose ADDED lines look like they contain a secret.
+# Flags: private-key blocks, cloud/API token prefixes, and names such as password/passphrase/secret/token/api_key
+# followed by ':' or '=' and a long literal value (20+ characters). Prompts like printf "...%s" and references like
+# "!secret name" do not match. Pattern-based: an unusual format can pass, so treat this as a safety net, not a guarantee.
+# Allow list: regular expressions (one per line) in the file named by SECRET_ALLOW_FILE (default .living-notes-secret-allow).
+# Override once after reviewing by eye:  git commit --no-verify
+root="$(git rev-parse --show-toplevel)"
+allow=".living-notes-secret-allow"
+[ -f "$root/.living-notes.conf" ] && . "$root/.living-notes.conf" && allow="${SECRET_ALLOW_FILE:-$allow}"
+
+added="$(git diff --cached -U0 --no-color | grep -E '^\+' | grep -vE '^\+\+\+ ' || true)"
+[ -n "$added" ] || exit 0
+
+patterns=(
+  'BEGIN [A-Z ]*PRIVATE KEY'
+  'AKIA[0-9A-Z]{16}'
+  'ghp_[A-Za-z0-9]{30,}'
+  'github_pat_[A-Za-z0-9_]{30,}'
+  'xox[baprs]-[A-Za-z0-9-]{10,}'
+  'sk-[A-Za-z0-9]{32,}'
+  '(password|passwd|passphrase|secret|token|api[_-]?key|psk)["'\'']?[[:space:]]*[:=][[:space:]]*["'\'']?[A-Za-z0-9+/_=-]{20,}'
+)
+hits=""
+for p in "${patterns[@]}"; do
+  m="$(printf '%s\n' "$added" | grep -nE -- "$p" || true)"
+  [ -n "$m" ] && hits="$hits$m"$'\n'
+done
+if [ -n "$hits" ] && [ -f "$root/$allow" ]; then
+  while IFS= read -r a; do
+    [ -n "$a" ] && [ "${a:0:1}" != "#" ] || continue
+    hits="$(printf '%s' "$hits" | grep -vE -- "$a" || true)"
+  done < "$root/$allow"
+fi
+hits="$(printf '%s' "$hits" | sed '/^$/d')"
+if [ -n "$hits" ]; then
+  echo "pre-commit: possible secret in the added lines (first 80 characters shown):" >&2
+  printf '%s\n' "$hits" | cut -c1-80 >&2
+  echo "Remove it, store it where the notes say secrets live, or (after checking) git commit --no-verify." >&2
+  exit 1
+fi
+exit 0
