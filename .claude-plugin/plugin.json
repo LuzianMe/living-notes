@@ -1,0 +1,13 @@
+{
+  "name": "living-notes",
+  "version": "0.1.0",
+  "description": "Keep a project's knowledge in a versioned, secret-free, cross-referenced Markdown notes tree that stays accurate: method, starter tree, commit/lint/map/mirror tools and an agent skill.",
+  "author": {
+    "name": "Luzian",
+    "url": "https://github.com/LuzianMe"
+  },
+  "homepage": "https://github.com/LuzianMe/living-notes",
+  "repository": "https://github.com/LuzianMe/living-notes",
+  "license": "Apache-2.0",
+  "keywords": ["notes", "documentation", "runbook", "knowledge-management", "git", "agents", "devops"]
+}

@@ -1,0 +1,27 @@
+{
+  "name": "living-notes",
+  "owner": {
+    "name": "Luzian",
+    "url": "https://github.com/LuzianMe"
+  },
+  "plugins": [
+    {
+      "name": "living-notes",
+      "source": "./",
+      "description": "Skill, starter tree and tools for a versioned, secret-free, cross-referenced notes tree: capture changes, audit, bootstrap, merge handoffs, restore drills.",
+      "author": {
+        "name": "Luzian"
+      },
+      "license": "Apache-2.0",
+      "category": "productivity",
+      "tags": [
+        "notes",
+        "documentation",
+        "runbook",
+        "git",
+        "agents"
+      ]
+    }
+  ],
+  "description": "Living Notes: a method and tools for keeping project knowledge accurate, secure, versioned and connected."
+}

@@ -5,7 +5,9 @@ description: Keep a project's knowledge in a versioned, secret-free, cross-refer
 
 # Living Notes
 
-Operational memory for long or large projects (infrastructure, platforms, data/ML systems, research, hardware): a Markdown tree with fixed file roles, dated evidence-based entries, explicit relations between files, a ledger of derived copies, git versioning, secret refusal and layered backup. Full method: `docs/METHODOLOGY.md`. Starter files: `template/`. Tools: `tools/`.
+**Kit location (KIT):** `${CLAUDE_PLUGIN_ROOT}` when this skill is installed as a plugin; otherwise the folder where the Living Notes repository was cloned. The kit holds `docs/METHODOLOGY.md`, `template/` and `tools/`; a project created with `bootstrap.sh` gets its own copy of `tools/` and `docs/`, and capture/audit steps below use the **project's** `tools/`.
+
+Operational memory for long or large projects (infrastructure, platforms, data/ML systems, research, hardware): a Markdown tree with fixed file roles, dated evidence-based entries, explicit relations between files, a ledger of derived copies, git versioning, secret refusal and layered backup. Full method: `<KIT>/docs/METHODOLOGY.md` (also copied into each project). Starter files: `<KIT>/template/`. Tools: `<KIT>/tools/`.
 
 Works with any agent or none. The notes root has an entry point (`AGENTS.md`, or `CLAUDE.md` containing `@AGENTS.md`); read it first.
 
@@ -27,7 +29,7 @@ Works with any agent or none. The notes root has an entry point (`AGENTS.md`, or
 Read the pending list and every note; verify every stated fact live; correct stale statements (mark "was true on <date>", do not erase history); refresh derived copies in order (notes, mirror, map, search/knowledge base, offline media, diagrams, agent memory); run the verification script, `notes-lint.py` and a secret scan; write the sync-log line with counts and with what could not be done; commit with a tag (`notes-commit --tag audit-<date> "..."`); report what changed, the status and what needs a human.
 
 ### 3. Bootstrap (new project)
-`tools/bootstrap.sh <dir> --name "Project" --owner "Name" --tz "<zone>"`, then fill `notes/working-agreement.md` and `notes/state.md`, set `MIRROR_TARGET` in `.living-notes.conf`, run `tools/mirror-push.sh`, set up an independent encrypted snapshot of the mirror, run `tools/restore-drill.sh` once.
+`bash "<KIT>/tools/bootstrap.sh" <dir> --name "Project" --owner "Name" --tz "<zone>"`, then fill `notes/working-agreement.md` and `notes/state.md`, set `MIRROR_TARGET` in `.living-notes.conf`, run `tools/mirror-push.sh`, set up an independent encrypted snapshot of the mirror, run `tools/restore-drill.sh` once.
 
 ### 4. Merge (another session or person left a handoff)
 Read the handoff in `notes/plans/`, check `git status` and last-modified times for concurrent edits, merge each fact into its canonical file in small atomic edits (re-read before each write), then update the handoff's merge-status block.
@@ -43,6 +45,8 @@ Read the handoff in `notes/plans/`, check `git status` and last-modified times f
 - **Supersede, do not delete**: mark old statements with the date they stopped being true.
 - **Never use `.bak`-style copies for files inside the repository**; git is the history. Use dated copy-suffix backups only for files outside it, before changing them.
 - A file with unsynced consequences gets a "NOT synced" clause in the sync log.
+
+If the project has notes but no `tools/` folder yet, copy it from the kit (`cp -r "<KIT>/tools" ./tools`, leave out `bootstrap.sh`) and run `git config core.hooksPath tools/hooks`.
 
 ## Files this skill expects (created by `bootstrap.sh`)
 `AGENTS.md`/`CLAUDE.md`; `notes/working-agreement.md`; `notes/state.md`; `notes/runbook.md`; `notes/sync-tracker.md`; `notes/plans/backlog.md`; `notes/logs/`; `notes/scripts/`; `notes/verification/verification.md`; `notes/archive/`; `.living-notes.conf`; `tools/`.

@@ -9,6 +9,17 @@ bad()  { echo "  FAIL $1"; fail=$((fail+1)); }
 chk()  { if eval "$2" >/dev/null 2>&1; then ok "$1"; else bad "$1"; fi; }
 export GIT_AUTHOR_NAME=Test GIT_AUTHOR_EMAIL=t@example.com GIT_COMMITTER_NAME=Test GIT_COMMITTER_EMAIL=t@example.com
 
+echo "plugin manifests"
+chk "plugin.json is valid JSON"         "python3 -c \"import json;json.load(open('$kit/.claude-plugin/plugin.json'))\""
+chk "marketplace.json is valid JSON"    "python3 -c \"import json;json.load(open('$kit/.claude-plugin/marketplace.json'))\""
+chk "plugin and marketplace names match" "python3 - <<PY
+import json
+a=json.load(open('$kit/.claude-plugin/plugin.json'));b=json.load(open('$kit/.claude-plugin/marketplace.json'))
+assert a['name']==b['plugins'][0]['name'] and 'version' in a and b['plugins'][0]['source'] in ('./', '.')
+PY"
+chk "skill file has matching name"      "head -5 $kit/skills/living-notes/SKILL.md | grep -q '^name: living-notes'"
+chk "marketplace source resolves to the plugin root" "[ -f $kit/.claude-plugin/plugin.json ] && [ -d $kit/skills/living-notes ]"
+
 echo "bootstrap"
 "$kit/tools/bootstrap.sh" "$tmp/proj" --name "Demo" --owner "Tester" --tz "UTC" >/dev/null 2>&1
 cd "$tmp/proj" || exit 1

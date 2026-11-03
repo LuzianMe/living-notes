@@ -375,4 +375,4 @@ Design rules for the tools: idempotent; skip quietly when nothing changed (hash 
 | Mirror (8.4) | `tools/mirror-push.sh` |
 | Restore drill (8.4, 11.6) | `tools/restore-drill.sh` |
 | Entry point for agents (12) | `template/AGENTS.md` (+ `CLAUDE.md` containing `@AGENTS.md`) |
-| Agent skill | `SKILL.md` |
+| Agent skill | `skills/living-notes/SKILL.md` (plugin manifests in `.claude-plugin/`) |

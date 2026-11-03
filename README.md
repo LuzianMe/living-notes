@@ -16,9 +16,18 @@ It started as the operational memory of a long-running, AI-operated engineering 
 | `tools/build-notes-map.py` | Builds a static, searchable map: notes grouped by purpose, **who mentions whom**, backlinks, per-note git history, recent commits. Refuses to build if a note contains a secret. |
 | `tools/mirror-push.sh`, `tools/restore-drill.sh` | A second copy of the repository, and proof that it can be restored. |
 | `tools/bootstrap.sh` | Creates a new notes repository from the template in one command. |
-| `SKILL.md` | The same method packaged as an agent skill (capture, audit, bootstrap, merge, review). |
+| `skills/living-notes/SKILL.md` | The same method packaged as an agent skill (capture, audit, bootstrap, merge, review). |
+| `.claude-plugin/` | Claude Code plugin and marketplace manifests, so it installs with one command. |
 
-## Quick start
+## Install as a Claude Code plugin (one command)
+
+```
+/plugin marketplace add LuzianMe/living-notes
+/plugin install living-notes@living-notes
+```
+Then ask Claude to "start a living notes tree for my project", "update the notes", "audit the notes" or "commit the notes". The plugin carries the skill, the template and the tools; the skill finds them through `${CLAUDE_PLUGIN_ROOT}`.
+
+## Quick start (without the plugin)
 
 ```bash
 git clone https://github.com/LuzianMe/living-notes.git
@@ -35,7 +44,7 @@ Requirements: bash, git, python 3.8+, rsync (for the mirror). The notes map is n
 
 ## Using it with an AI agent
 
-Put the notes repository where the agent works and point it at `AGENTS.md` (Claude Code reads `CLAUDE.md`, which contains `@AGENTS.md`). The entry point lists the read order and the five rules that must never be missed. To use it as a Claude Code skill, copy `SKILL.md` (with `docs/`, `template/`, `tools/`) into a skill folder such as `~/.claude/skills/living-notes/`. Other agents can read `SKILL.md` as a plain procedure.
+Put the notes repository where the agent works and point it at `AGENTS.md` (Claude Code reads `CLAUDE.md`, which contains `@AGENTS.md`). The entry point lists the read order and the five rules that must never be missed. Other agents (or a manual install) can read `skills/living-notes/SKILL.md` as a plain procedure; it refers to the kit's `docs/`, `template/` and `tools/` folders, which it calls KIT (the clone location when not installed as a plugin).
 
 ## The ideas in six lines
 
@@ -55,4 +64,4 @@ Bootstraps a tree in a temporary folder and exercises commit, hook, lint, map, m
 
 ## License
 
-See `LICENSE`.
+Apache License 2.0. See `LICENSE` and `NOTICE`.
