@@ -1,33 +1,3 @@
-#!/bin/bash
-# ci-check: the checks a pull request must pass (run by .github/workflows/notes-check.yml, runnable locally).
-#
-#   tools/ci-check [BASE]      BASE = commit or ref to compare with (default origin/main); empty or all zeros = last commit only
-#
-#   1. secret scan of every line the range adds (same rules as the local hook, which a contributor can bypass)
-#   2. tools/notes-lint.py: errors (exit 2) fail the check; warnings fail only when CI_LINT_STRICT=1 in .living-notes.conf
-set -uo pipefail
-here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
-root="$(git -C "$here" rev-parse --show-toplevel)"; cd "$root"
-[ -f .living-notes.conf ] && . ./.living-notes.conf
-: "${CI_LINT_STRICT:=0}"
-
-base="${1-origin/main}"
-case "$base" in ""|0000000000000000000000000000000000000000) base="";; esac
-if [ -n "$base" ] && ! git rev-parse -q --verify "$base^{commit}" >/dev/null; then
-  echo "ci-check: base '$base' not found (shallow clone?); scanning the last commit only" >&2; base=""
-fi
-if [ -z "$base" ]; then base="$(git rev-parse -q --verify HEAD~1 || git hash-object -t tree /dev/null)"; range=("$base" HEAD); else range=("$base"...HEAD); fi
-
-rc=0
-echo "== secret scan (${range[*]})"
-if hits="$(git diff -U0 --no-color "${range[@]}" | "$here/secret-scan")"; then echo "ok: no secret-looking added lines"
-else echo "FAIL: possible secrets in added lines (first 80 characters shown):"; printf '%s\n' "$hits"; rc=1; fi
-
-echo "== notes-lint"
-python3 "$here/notes-lint.py" --root "$root"; lrc=$?
-if [ "$lrc" = 2 ]; then echo "FAIL: lint errors"; rc=1
-elif [ "$lrc" = 1 ] && [ "$CI_LINT_STRICT" = 1 ]; then echo "FAIL: lint warnings (CI_LINT_STRICT=1)"; rc=1
-elif [ "$lrc" = 1 ]; then echo "warnings only: not failing (set CI_LINT_STRICT=1 to fail on warnings)"; fi
-
-[ "$rc" = 0 ] && echo "ci-check: passed" || echo "ci-check: FAILED"
-exit "$rc"
+#!/bin/sh
+# ci-check: launcher for ci_check.py (the implementation, shared by Linux, macOS and Windows).
+exec "$(cd "$(dirname "$0")" && pwd -P)/_run" ci_check.py "$@"

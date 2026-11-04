@@ -2,14 +2,14 @@
 name: living-notes
 description: Keep a project's knowledge in a versioned, secret-free, cross-referenced Markdown notes tree that stays accurate. Use when a change was just made to a system or codebase and the notes must be updated and committed; when asked to "update the notes", "document this", "sync", "audit the notes" or "commit the notes"; when merging another session's handoff; or when asked to start a notes tree for a new project.
 license: Apache-2.0
-compatibility: Needs bash, git, python 3.8+ and rsync (macOS, Linux, or Windows through WSL). Agent-neutral; any coding agent that reads SKILL.md or AGENTS.md can use it.
+compatibility: Needs git and python 3.8+ (Linux, macOS, Windows). rsync and ssh only for a remote-host mirror. Agent-neutral; any coding agent that reads SKILL.md or AGENTS.md can use it.
 metadata:
-  version: "0.3.0"
+  version: "0.4.0"
 ---
 
 # Living Notes
 
-**Kit location (KIT):** the folder that contains this `SKILL.md`. Resolve it from the path this skill was loaded from; it holds `docs/METHODOLOGY.md`, `template/` and `tools/`, and nothing else is needed. If you cannot tell where this file lives, look for a folder containing both `tools/bootstrap.sh` and `docs/METHODOLOGY.md`; if there is none, ask the user. A project created with `bootstrap.sh` gets its own copy of `tools/` and `docs/`, and the capture/audit steps below use the **project's** `tools/`.
+**Kit location (KIT):** the folder that contains this `SKILL.md`. Resolve it from the path this skill was loaded from; it holds `docs/METHODOLOGY.md`, `template/` and `tools/`, and nothing else is needed. If you cannot tell where this file lives, look for a folder containing both `tools/bootstrap` and `docs/METHODOLOGY.md`; if there is none, ask the user. A project created with `bootstrap` gets its own copy of `tools/` and `docs/`, and the capture/audit steps below use the **project's** `tools/`. `tools/notes-commit` etc. are launchers for the Python scripts next to them; in Windows cmd or PowerShell write `tools\notes-commit`, or call `python tools/notes_commit.py` on any platform.
 
 Operational memory for long or large projects (infrastructure, platforms, data/ML systems, research, hardware): a Markdown tree with fixed file roles, dated evidence-based entries, explicit relations between files, a ledger of derived copies, git versioning, secret refusal and layered backup. Full method: `<KIT>/docs/METHODOLOGY.md` (also copied into each project). Starter files: `<KIT>/template/`. Tools: `<KIT>/tools/`.
 
@@ -36,13 +36,13 @@ Find out what this session may do: write files, run git, reach the network, run 
 Read the pending list and every note; verify every stated fact live; correct stale statements (mark "was true on <date>", do not erase history); refresh derived copies in order (notes, mirror, map, search/knowledge base, offline media, diagrams, agent memory); run the verification script, `notes-lint.py` and a secret scan; write the sync-log line with counts and with what could not be done; commit with a tag (`notes-commit --tag audit-<date> "..."`); report what changed, the status and what needs a human.
 
 ### 3. Bootstrap (new project)
-`bash "<KIT>/tools/bootstrap.sh" <dir> --name "Project" --owner "Name" --tz "<zone>"`, then fill `notes/working-agreement.md` and `notes/state.md`, set `MIRROR_TARGET` in `.living-notes.conf`, run `tools/mirror-push.sh`, set up an independent encrypted snapshot of the mirror, run `tools/restore-drill.sh` once.
+`python3 "<KIT>/tools/bootstrap.py" <dir> --name "Project" --owner "Name" --tz "<zone>"` (`python` or `py -3` on Windows), then fill `notes/working-agreement.md` and `notes/state.md`, set `MIRROR_TARGET` in `.living-notes.conf`, run `tools/mirror-push`, set up an independent encrypted snapshot of the mirror, run `tools/restore-drill` once.
 
 ### 4. Merge (another session or person left a handoff)
 Read the handoff in `notes/plans/`, check `git status` and last-modified times for concurrent edits, merge each fact into its canonical file in small atomic edits (re-read before each write), then update the handoff's merge-status block. In a shared repository (several people or agents, a hosting service), work on a branch and open a pull request instead of committing to main: `tools/notes-commit --branch NAME --pr "message"`; CI (`tools/ci-check`) scans for secrets and lints; a human merges. Set-up and conflict handling: `<KIT>/docs/TEAM.md`.
 
 ### 5. Restore drill / review
-`tools/restore-drill.sh <restored dir or archive>`; or run `tools/notes-lint.py` and report the weak spots found.
+`tools/restore-drill <restored dir or archive>`; or run `tools/notes-lint.py` and report the weak spots found.
 
 ### 6. Resume and hand off (start and end of a session)
 **Resume:** read the entry point, `notes/working-agreement.md`, the pending list in `notes/sync-tracker.md`, the newest handoff in `notes/plans/` and `git log -5`; say in three lines what is current, what is unfinished and what is waiting on a person. Do not list pending items to the owner unless asked or unless one blocks the task.
@@ -57,9 +57,9 @@ Read the handoff in `notes/plans/`, check `git status` and last-modified times f
 - **Never use `.bak`-style copies for files inside the repository**; git is the history. Use dated copy-suffix backups only for files outside it, before changing them.
 - A file with unsynced consequences gets a "NOT synced" clause in the sync log.
 
-If the project has notes but no `tools/` folder yet, copy it from the kit (`cp -r "<KIT>/tools" ./tools`, leave out `bootstrap.sh`) and run `git config core.hooksPath tools/hooks`.
+If the project has notes but no `tools/` folder yet, copy it from the kit (`cp -r "<KIT>/tools" ./tools`, leave out `bootstrap`) and run `git config core.hooksPath tools/hooks`.
 
-## Files this skill expects (created by `bootstrap.sh`)
+## Files this skill expects (created by `bootstrap`)
 `AGENTS.md`/`CLAUDE.md`; `notes/working-agreement.md`; `notes/state.md`; `notes/runbook.md`; `notes/sync-tracker.md`; `notes/plans/backlog.md`; `notes/logs/`; `notes/scripts/`; `notes/verification/verification.md`; `notes/archive/`; `.living-notes.conf`; `tools/`.
 
 ## Configuration

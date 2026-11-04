@@ -14,5 +14,5 @@ This repository is a kit, not a notes tree. Do not confuse it with the notes tre
 3. **No secrets, no personal data** (hostnames, paths, addresses) in any file or commit; the tests use obviously fake values.
 4. **Versions move together:** `.claude-plugin/plugin.json` `version` equals `metadata.version` in `SKILL.md` (the test checks it). Bump both, tag `vX.Y.Z` and make a GitHub release.
 5. `SKILL.md` follows the Agent Skills specification (name equals the folder name, description at most 1024 characters, under 500 lines).
-6. Tools target bash, git, python 3.8+ and rsync. Keep them working on Linux and macOS; Windows is supported through WSL.
+6. Tools are Python 3.8+ (standard library only) and git, with an extension-less `sh` launcher and a `.cmd` launcher for each. Keep them working on Linux, macOS and Windows (CI runs `tests/smoke.sh` on Linux and macOS and `tests/native.py` on all three). Do not add GNU-only shell commands or new dependencies.
 7. Change the method in `docs/METHODOLOGY.md` first, then the tools and template that implement it (section 17 maps one to the other).

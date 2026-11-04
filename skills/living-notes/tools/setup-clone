@@ -1,15 +1,3 @@
-#!/bin/bash
-# setup-clone: run once after cloning a notes repository. Git does not copy hook settings with a clone, so this
-# activates the versioned hooks (secret refusal before every commit) and checks that the tools can run.
-set -eo pipefail
-here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
-root="$(git -C "$here" rev-parse --show-toplevel)"; cd "$root"
-git config core.hooksPath tools/hooks
-chmod +x tools/* tools/hooks/* 2>/dev/null || true
-miss=""
-for c in git python3; do command -v "$c" >/dev/null || miss="$miss $c"; done
-[ -z "$miss" ] || { echo "setup-clone: missing required program(s):$miss" >&2; exit 1; }
-[ -n "$(git config user.name)" ] && [ -n "$(git config user.email)" ] || echo "setup-clone: set your identity first: git config user.name \"Your Name\"; git config user.email you@example.com" >&2
-command -v rsync >/dev/null || echo "note: rsync not found; tools/mirror-push.sh will not work until it is installed"
-command -v gh >/dev/null || echo "note: gh (GitHub CLI) not found; 'notes-commit --pr' will print the branch instead of opening a pull request"
-echo "setup-clone: ready (hooks: $(git config core.hooksPath)). Next: read AGENTS.md, then work on a branch:  tools/notes-commit --branch my-change --pr \"what changed and why\""
+#!/bin/sh
+# setup-clone: launcher for setup_clone.py (the implementation, shared by Linux, macOS and Windows).
+exec "$(cd "$(dirname "$0")" && pwd -P)/_run" setup_clone.py "$@"

@@ -42,7 +42,7 @@ article pre{background:var(--code);padding:12px;overflow:auto;border-radius:6px}
 
 def sh(args, cwd):
     try:
-        return subprocess.run(args, cwd=cwd, capture_output=True, text=True, timeout=30).stdout
+        return subprocess.run(args, cwd=cwd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30).stdout
     except Exception:
         return ""
 
@@ -52,6 +52,11 @@ def slug(rel):
 
 
 def main():
+    for _s in (sys.stdout, sys.stderr):
+        try:
+            _s.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--root", default=".")
     ap.add_argument("--out", default=None)
@@ -72,10 +77,10 @@ def main():
 
     files = []
     for dp, dn, fn in os.walk(root):
-        dn[:] = sorted(d for d in dn if d not in SKIP_DIRS and not os.path.relpath(os.path.join(dp, d), root).startswith("template"))
+        dn[:] = sorted(d for d in dn if d not in SKIP_DIRS and not os.path.relpath(os.path.join(dp, d), root).replace(os.sep, "/").startswith("template"))
         for f in sorted(fn):
             if f.endswith(".md"):
-                files.append(os.path.relpath(os.path.join(dp, f), root))
+                files.append(os.path.relpath(os.path.join(dp, f), root).replace(os.sep, "/"))
     info = {}
     for rel in files:
         text = open(os.path.join(root, rel), encoding="utf-8", errors="replace").read()

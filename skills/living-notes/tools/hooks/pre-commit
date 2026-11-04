@@ -1,8 +1,9 @@
-#!/bin/bash
-# pre-commit: refuse a commit whose ADDED lines look like they contain a secret (rules and allow list: tools/secret-scan).
+#!/bin/sh
+# pre-commit: refuse a commit whose ADDED lines look like they contain a secret (rules and allow list: tools/secret_scan.py).
+# Plain sh on purpose: git runs hooks with the shell it ships (Git for Windows includes one), so this works on Linux, macOS and Windows.
 # Override once after reviewing by eye:  git commit --no-verify
-here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
-hits="$(git diff --cached -U0 --no-color | "$here/../secret-scan")" && exit 0
+here=$(cd "$(dirname "$0")" && pwd -P)
+hits=$(git diff --cached -U0 --no-color | sh "$here/../_run" secret_scan.py) && exit 0
 echo "pre-commit: possible secret in the added lines (first 80 characters shown):" >&2
 printf '%s\n' "$hits" >&2
 echo "Remove it, store it where the notes say secrets live, or (after checking) git commit --no-verify." >&2

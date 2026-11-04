@@ -17,8 +17,8 @@ Agent-neutral: the skill follows the open [Agent Skills](https://agentskills.io/
 | `tools/hooks/pre-commit`, `tools/secret-scan` | Refuse commits whose added lines look like secrets (versioned; activated with `core.hooksPath`; the same rules run in CI). |
 | `tools/notes-lint.py` | Finds missing references, duplicate heading numbers, stale "last updated" headers, passed follow-up dates, incomplete ledger rows and secrets. |
 | `tools/build-notes-map.py` | Builds a static, searchable map: notes grouped by purpose, **who mentions whom**, backlinks, per-note git history, recent commits. Refuses to build if a note contains a secret. |
-| `tools/mirror-push.sh`, `tools/restore-drill.sh` | A second copy of the repository, and proof that it can be restored. |
-| `tools/bootstrap.sh` | Creates a new notes repository from the template in one command. |
+| `tools/mirror-push`, `tools/restore-drill` | A second copy of the repository, and proof that it can be restored. |
+| `tools/bootstrap` | Creates a new notes repository from the template in one command. |
 | `tools/ci-check`, `tools/setup-clone`, `docs/TEAM.md`, `template/.github/` | Team use: a pull-request check (secret scan + lint), per-clone setup, CODEOWNERS and PR template, and the step-by-step guide for GitHub or GitHub Enterprise. |
 
 At the repository root: `.claude-plugin/` (Claude Code plugin and marketplace manifests), `tests/smoke.sh`, `examples/`, `LICENSE`, `NOTICE`.
@@ -51,14 +51,14 @@ Use the tools directly (below). The method is plain Markdown plus git.
 Put the notes tree in a private repository on GitHub, GitHub Enterprise or any git host. A bootstrapped tree already contains a pull-request check (`.github/workflows/notes-check.yml`), a CODEOWNERS file and a PR template. Teammates run `tools/setup-clone` once after cloning and change notes with `tools/notes-commit --branch NAME --pr "message"`. Set-up, branch protection and conflict handling: `skills/living-notes/docs/TEAM.md`.
 
 ## Platform support
-macOS and Linux work as is. Windows works through WSL (the tools need bash, git, python 3.8+ and rsync). A native Windows port is not done.
+Linux, macOS and Windows (native, Git for Windows, or WSL). The tools are Python 3.8+ (standard library only) plus git; each has a launcher for every shell. In Git Bash, WSL, macOS and Linux write `tools/notes-commit ...`; in cmd or PowerShell write `tools\notes-commit ...` (a `.cmd` launcher) or `python tools\notes_commit.py ...`. Remote mirrors over ssh need rsync and ssh; a `git:URL` mirror target needs neither. The kit's tests run on all three systems in GitHub Actions.
 
 ## Quick start (without an agent)
 
 ```bash
 git clone https://github.com/LuzianMe/living-notes.git
 cd living-notes/skills/living-notes
-tools/bootstrap.sh ~/projects/my-project-notes --name "My Project" --owner "Your Name" --tz "UTC"
+tools/bootstrap ~/projects/my-project-notes --name "My Project" --owner "Your Name" --tz "UTC"
 cd ~/projects/my-project-notes
 # edit notes/working-agreement.md and notes/state.md, then:
 tools/notes-commit "Describe the first real change and why"

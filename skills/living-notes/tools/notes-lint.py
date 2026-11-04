@@ -31,7 +31,7 @@ DATE = r"\d{4}-\d{2}-\d{2}"
 
 def repo_root(start):
     try:
-        return subprocess.run(["git", "-C", start, "rev-parse", "--show-toplevel"], capture_output=True, text=True, check=True).stdout.strip()
+        return subprocess.run(["git", "-C", start, "rev-parse", "--show-toplevel"], capture_output=True, text=True, encoding="utf-8", errors="replace", check=True).stdout.strip()
     except Exception:
         return os.path.abspath(start)
 
@@ -53,7 +53,7 @@ def walk_md(root):
         dn[:] = sorted(d for d in dn if d not in SKIP_DIRS)
         for f in sorted(fn):
             if f.endswith(".md"):
-                out.append(os.path.relpath(os.path.join(dp, f), root))
+                out.append(os.path.relpath(os.path.join(dp, f), root).replace(os.sep, "/"))
     return out
 
 
@@ -63,11 +63,16 @@ def all_files(root):
         dn[:] = [d for d in dn if d not in SKIP_DIRS]
         for f in fn:
             names.add(f)
-            paths.add(os.path.relpath(os.path.join(dp, f), root))
+            paths.add(os.path.relpath(os.path.join(dp, f), root).replace(os.sep, "/"))
     return names, paths
 
 
 def main():
+    for _s in (sys.stdout, sys.stderr):
+        try:
+            _s.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--root", default=".")
     ap.add_argument("--quiet", action="store_true", help="hide info lines")

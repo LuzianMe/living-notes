@@ -52,12 +52,12 @@ PY"
 cp -a "$skill" "$tmp/skill-only"; kit="$tmp/skill-only"
 
 echo "bootstrap (from the copied skill folder only)"
-"$kit/tools/bootstrap.sh" "$tmp/proj" --name "Demo" --owner "Tester" --tz "UTC" >/dev/null 2>&1
+"$kit/tools/bootstrap" "$tmp/proj" --name "Demo" --owner "Tester" --tz "UTC" >/dev/null 2>&1
 cd "$tmp/proj" || exit 1
 chk "baseline commit exists"            "git log --oneline | grep -q Baseline"
 chk "placeholders filled"               "! grep -rq '{{' AGENTS.md notes .living-notes.conf"
 chk "hooks path is versioned"           "[ \"\$(git config core.hooksPath)\" = tools/hooks ]"
-chk "bootstrap.sh not copied into tree" "[ ! -e tools/bootstrap.sh ]"
+chk "bootstrap not copied into tree" "[ ! -e tools/bootstrap ]"
 
 echo "notes-commit"
 echo "- **$(date +%F) (test change):** added a thing, tested, undo: revert." >> notes/state.md
@@ -98,9 +98,9 @@ rm -f notes/leak.md
 echo "mirror and restore drill"
 sed "s|^MIRROR_TARGET=.*|MIRROR_TARGET=\"$tmp/mirror\"|" .living-notes.conf > .living-notes.conf.new && mv .living-notes.conf.new .living-notes.conf
 git add -A; git commit -q -m "Configure mirror"
-chk "mirror push"                       "tools/mirror-push.sh | grep -q 'mirror: pushed'"
+chk "mirror push"                       "tools/mirror-push | grep -q 'mirror: pushed'"
 chk "mirror contains .git"              "[ -d $tmp/mirror/.git ]"
-chk "restore drill passes"              "tools/restore-drill.sh $tmp/mirror | grep -q 'fsck: OK'"
+chk "restore drill passes"              "tools/restore-drill $tmp/mirror | grep -q 'fsck: OK'"
 
 echo "team setup (branches, CI check, per-clone setup)"
 chk "team files exist in the bootstrapped tree" "[ -f .github/workflows/notes-check.yml ] && [ -f .github/CODEOWNERS ] && [ -f .github/pull_request_template.md ] && [ -f docs/TEAM.md ]"

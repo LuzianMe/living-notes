@@ -13,7 +13,7 @@ Created {{DATE}}. One place that says which copies of the project's documentatio
 | Target | What it is | Last synced | How to refresh | Status |
 |---|---|---|---|---|
 | Core notes | `state.md`, `runbook.md`, entity notes, `plans/` | {{DATE}} (baseline) | edit the files; verify facts live first | in sync |
-| Mirror | second copy of this repository on another machine/disk | not set up | `tools/mirror-push.sh` | pending |
+| Mirror | second copy of this repository on another machine/disk | not set up | `tools/mirror-push` | pending |
 | Independent snapshots | encrypted, versioned backup of the mirror | not set up | backup job | pending |
 | Notes map | generated navigable view | not built | `python3 tools/build-notes-map.py` | pending |
 | Offline encrypted copy | disaster-recovery media with checksum manifest | not set up | refresh script + `SHA256SUMS` | pending |

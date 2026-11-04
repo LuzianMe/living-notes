@@ -43,7 +43,7 @@ Possible through the hosting API or an integration that edits files in the repos
 - Everything above is plain git plus one workflow file; nothing depends on github.com.
 - Claude Code plugin from your own server: copy this kit into a repository on your instance and add it with its git URL (`/plugin marketplace add https://<your-host>/<org>/living-notes.git`).
 - Codex and other agents: link or copy `skills/living-notes/` into the agent's skills folder (see the main README).
-- Mirror and restore drill still apply: the hosting service is one copy, not a backup. Keep an independent snapshot (`tools/mirror-push.sh`, `tools/restore-drill.sh`).
+- Mirror and restore drill still apply: the hosting service is one copy, not a backup. Keep an independent snapshot (`tools/mirror-push`, `tools/restore-drill`).
 
 ## 7. What CI checks (`tools/ci-check`)
 1. Every line the pull request adds is scanned with the same rules as the local hook (`tools/secret-scan`).
