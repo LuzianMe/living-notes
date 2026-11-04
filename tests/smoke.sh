@@ -96,7 +96,7 @@ chk "map refuses a secret"              "! python3 tools/build-notes-map.py"
 rm -f notes/leak.md
 
 echo "mirror and restore drill"
-sed -i "s|^MIRROR_TARGET=.*|MIRROR_TARGET=\"$tmp/mirror\"|" .living-notes.conf
+sed "s|^MIRROR_TARGET=.*|MIRROR_TARGET=\"$tmp/mirror\"|" .living-notes.conf > .living-notes.conf.new && mv .living-notes.conf.new .living-notes.conf
 git add -A; git commit -q -m "Configure mirror"
 chk "mirror push"                       "tools/mirror-push.sh | grep -q 'mirror: pushed'"
 chk "mirror contains .git"              "[ -d $tmp/mirror/.git ]"
