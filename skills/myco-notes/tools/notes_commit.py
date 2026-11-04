@@ -9,7 +9,7 @@
   tools/notes-commit --push "message"                  also git push the current branch to origin (sets the upstream)
   tools/notes-commit --pr "message"                    --push, then open a pull request with the GitHub CLI (gh pr create --fill)
 
-Behaviour (configured in .living-notes.conf at the repository root):
+Behaviour (configured in .myco-notes.conf at the repository root):
   - stages everything (respecting .gitignore); says "nothing to commit" and exits 0 when clean
   - syntax-checks changed shell and python files before committing (CHECK_SH / CHECK_PY)
   - the pre-commit hook (tools/hooks/pre-commit) refuses commits that add secret-looking lines
@@ -26,7 +26,7 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-import _ln  # noqa: E402
+import _myco  # noqa: E402
 
 
 def fail(msg, code=1):
@@ -36,7 +36,7 @@ def fail(msg, code=1):
 
 def shell_syntax_ok(path):
     """bash -n on Linux and macOS; skipped on Windows, where `bash` may be an unrelated launcher."""
-    if _ln.IS_WINDOWS or not shutil.which("bash"):
+    if _myco.IS_WINDOWS or not shutil.which("bash"):
         return True
     return subprocess.run(["bash", "-n", path]).returncode == 0
 
@@ -53,7 +53,7 @@ def is_shell_script(path):
 
 
 def main():
-    _ln.utf8_console()
+    _myco.utf8_console()
     ap = argparse.ArgumentParser(prog="notes-commit", add_help=False)
     ap.add_argument("-p", action="store_true")
     ap.add_argument("--human", action="store_true")
@@ -72,29 +72,29 @@ def main():
         print('usage: notes-commit [-p] [--human] [--tag NAME] [--branch NAME] [--push|--pr] "message"', file=sys.stderr)
         return 2
 
-    root = _ln.toplevel(os.environ.get("NOTES_ROOT") or os.getcwd()) or _ln.toplevel(HERE)
+    root = _myco.toplevel(os.environ.get("NOTES_ROOT") or os.getcwd()) or _myco.toplevel(HERE)
     if not root:
         fail("not inside a git repository", 2)
     os.chdir(root)
-    conf = _ln.load_conf(root)
+    conf = _myco.load_conf(root)
     check_sh, check_py = conf.get("CHECK_SH", "1") == "1", conf.get("CHECK_PY", "1") == "1"
     trailer, sync_globs, sync_cmd = conf.get("AGENT_TRAILER", ""), conf.get("SYNC_GLOBS", "").split(), conf.get("SYNC_CMD", "")
 
     if a.branch:
-        cur = _ln.git("symbolic-ref", "-q", "--short", "HEAD").stdout.strip()
+        cur = _myco.git("symbolic-ref", "-q", "--short", "HEAD").stdout.strip()
         if cur != a.branch:
-            exists = _ln.git("show-ref", "-q", "--verify", f"refs/heads/{a.branch}").returncode == 0
-            r = _ln.git("switch", "-q", *([] if exists else ["-c"]), a.branch)
+            exists = _myco.git("show-ref", "-q", "--verify", f"refs/heads/{a.branch}").returncode == 0
+            r = _myco.git("switch", "-q", *([] if exists else ["-c"]), a.branch)
             if r.returncode:
                 fail(f"cannot switch to branch {a.branch}: {r.stderr.strip()}")
             print(f"notes-commit: on branch {a.branch}")
 
-    _ln.git("add", "-A")
-    if _ln.git("diff", "--cached", "--quiet").returncode == 0:
+    _myco.git("add", "-A")
+    if _myco.git("diff", "--cached", "--quiet").returncode == 0:
         print("notes-commit: nothing to commit")
         return 0
 
-    changed = [f for f in _ln.git("-c", "core.quotepath=off", "diff", "--cached", "--name-only", "--diff-filter=AM", "-z").stdout.split("\0") if f]
+    changed = [f for f in _myco.git("-c", "core.quotepath=off", "diff", "--cached", "--name-only", "--diff-filter=AM", "-z").stdout.split("\0") if f]
     for f in changed:
         if f.endswith(".py") and check_py:
             try:
@@ -110,14 +110,14 @@ def main():
     rc = subprocess.run(["git", "commit", "-q", "-m", full]).returncode  # hook output goes straight to the terminal
     if rc:
         return rc
-    print(_ln.git("log", "--oneline", "-1").stdout.strip())
-    print("\n".join(_ln.git("show", "--stat", "--format=", "HEAD").stdout.rstrip("\n").splitlines()[-6:]))
+    print(_myco.git("log", "--oneline", "-1").stdout.strip())
+    print("\n".join(_myco.git("show", "--stat", "--format=", "HEAD").stdout.rstrip("\n").splitlines()[-6:]))
     if a.tag:
-        if _ln.git("tag", a.tag).returncode == 0:
+        if _myco.git("tag", a.tag).returncode == 0:
             print(f"tagged {a.tag}")
 
     if sync_globs and sync_cmd and any(fnmatch.fnmatchcase(f, g) for g in sync_globs for f in changed):
-        r = _ln.run_shell(sync_cmd, root)
+        r = _myco.run_shell(sync_cmd, root)
         if r.returncode:
             print("WARNING: committed, but SYNC_CMD failed; the live copy may differ from the committed copy", file=sys.stderr)
 
@@ -126,11 +126,11 @@ def main():
             print("WARNING: committed, but the mirror push failed", file=sys.stderr)
 
     if a.push or a.pr:
-        cur = _ln.git("symbolic-ref", "-q", "--short", "HEAD").stdout.strip()
+        cur = _myco.git("symbolic-ref", "-q", "--short", "HEAD").stdout.strip()
         if not cur:
             print("WARNING: detached HEAD, not pushing", file=sys.stderr)
             return 0
-        if _ln.git("remote", "get-url", "origin").returncode != 0:
+        if _myco.git("remote", "get-url", "origin").returncode != 0:
             print("WARNING: no remote named origin; nothing pushed", file=sys.stderr)
             return 0
         if subprocess.run(["git", "push", "-q", "-u", "origin", cur]).returncode == 0:

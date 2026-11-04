@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""notes-lint: cheap consistency checks for a Living Notes tree (Python standard library only).
+"""notes-lint: cheap consistency checks for a Myco Notes tree (Python standard library only).
 
 Checks
   refs      backticked names of notes (*.md) and of repository paths that do not exist
@@ -12,7 +12,7 @@ Checks
 
 Usage:  tools/notes-lint.py [--root DIR] [--quiet] [--strict]
 Exit:   0 clean, 1 warnings, 2 errors (secrets). --strict turns warnings into exit 1 even for info-only runs of 'due'.
-Ignore: put regular expressions (one per line) in .living-notes-lint-ignore; a finding whose text matches is dropped.
+Ignore: put regular expressions (one per line) in .myco-notes-lint-ignore; a finding whose text matches is dropped.
 """
 import argparse, datetime, os, re, subprocess, sys
 
@@ -38,7 +38,7 @@ def repo_root(start):
 
 def read_conf(root):
     conf = {}
-    p = os.path.join(root, ".living-notes.conf")
+    p = os.path.join(root, ".myco-notes.conf")
     if os.path.exists(p):
         for line in open(p, encoding="utf-8"):
             m = re.match(r'^\s*([A-Z_]+)=("?)(.*?)\2\s*(#.*)?$', line)
@@ -81,7 +81,7 @@ def main():
     root = repo_root(a.root)
     conf = read_conf(root)
     ignore = []
-    ip = os.path.join(root, ".living-notes-lint-ignore")
+    ip = os.path.join(root, ".myco-notes-lint-ignore")
     if os.path.exists(ip):
         ignore = [re.compile(l.strip()) for l in open(ip, encoding="utf-8") if l.strip() and not l.startswith("#")]
     today = datetime.date.today()

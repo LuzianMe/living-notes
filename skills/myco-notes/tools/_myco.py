@@ -1,4 +1,4 @@
-"""Shared helpers for the Living Notes tools. Standard library only; the same code runs on Linux, macOS and Windows."""
+"""Shared helpers for the Myco Notes tools. Standard library only; the same code runs on Linux, macOS and Windows."""
 import os
 import re
 import subprocess
@@ -28,8 +28,8 @@ def toplevel(start):
 
 
 def load_conf(root):
-    """Read .living-notes.conf (shell-style KEY=value, quoted values may span lines). No shell is executed."""
-    p = os.path.join(root, ".living-notes.conf")
+    """Read .myco-notes.conf (shell-style KEY=value, quoted values may span lines). No shell is executed."""
+    p = os.path.join(root, ".myco-notes.conf")
     conf = {}
     if not os.path.isfile(p):
         return conf

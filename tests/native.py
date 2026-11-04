@@ -9,7 +9,7 @@ import tempfile
 import zipfile
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SKILL = os.path.join(REPO, "skills", "living-notes")
+SKILL = os.path.join(REPO, "skills", "myco-notes")
 WIN = os.name == "nt"
 passed = failed = 0
 
@@ -36,7 +36,7 @@ def git(cwd, *a):
 
 
 def main():
-    tmp = tempfile.mkdtemp(prefix="ln-native-")
+    tmp = tempfile.mkdtemp(prefix="myco-native-")
     try:
         kit = os.path.join(tmp, "skill-only")
         shutil.copytree(SKILL, kit, ignore=shutil.ignore_patterns("__pycache__"))
@@ -50,7 +50,7 @@ def main():
         rc, out = run(L(kit, "bootstrap") + [proj, "--name", "Demo", "--owner", "Tester", "--tz", "UTC"], tmp)
         check("bootstrap runs", rc == 0, out)
         check("baseline commit exists", "Baseline" in git(proj, "log", "--oneline")[1])
-        check("placeholders filled", all("{{" not in open(os.path.join(proj, f), encoding="utf-8").read() for f in ("AGENTS.md", ".living-notes.conf")))
+        check("placeholders filled", all("{{" not in open(os.path.join(proj, f), encoding="utf-8").read() for f in ("AGENTS.md", ".myco-notes.conf")))
         check("hooks path is versioned", git(proj, "config", "core.hooksPath")[1].strip() == "tools/hooks")
         check("bootstrap launcher not copied", not os.path.exists(os.path.join(proj, "tools", "bootstrap.py")))
         check("team files present", all(os.path.exists(os.path.join(proj, p)) for p in (".github/workflows/notes-check.yml", "docs/TEAM.md", ".gitattributes")))
@@ -95,7 +95,7 @@ def main():
 
         print("mirror and restore drill")
         mirror = os.path.join(tmp, "mirror")
-        conf = os.path.join(proj, ".living-notes.conf")
+        conf = os.path.join(proj, ".myco-notes.conf")
         with open(conf, encoding="utf-8") as fh:
             text = fh.read()
         text = "".join(f'MIRROR_TARGET="{mirror}"\n' if l.startswith("MIRROR_TARGET=") else l for l in text.splitlines(True))

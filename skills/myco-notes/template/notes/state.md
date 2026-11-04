@@ -35,4 +35,4 @@ Last updated {{DATE}} ({{TIMEZONE}}). Last full audit: none yet. No secrets are 
 - _(short list of traps; long form goes in `runbook.md`)_
 
 # 4. Changelog (newest first)
-- **{{DATE}} (notes tree created):** baseline created from the Living Notes template. No system change.
+- **{{DATE}} (notes tree created):** baseline created from the Myco Notes template. No system change.

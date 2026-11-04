@@ -1,4 +1,4 @@
-# Living Notes for a team (GitHub, GitHub Enterprise and similar)
+# Myco Notes for a team (GitHub, GitHub Enterprise and similar)
 
 The notes tree is a git repository, so a team shares it like code. This page is the set-up and the working routine. The reasons are in `METHODOLOGY.md` section 18.
 
@@ -41,12 +41,12 @@ Possible through the hosting API or an integration that edits files in the repos
 
 ## 6. GitHub Enterprise notes
 - Everything above is plain git plus one workflow file; nothing depends on github.com.
-- Claude Code plugin from your own server: copy this kit into a repository on your instance and add it with its git URL (`/plugin marketplace add https://<your-host>/<org>/living-notes.git`).
-- Codex and other agents: link or copy `skills/living-notes/` into the agent's skills folder (see the main README).
+- Claude Code plugin from your own server: copy this kit into a repository on your instance and add it with its git URL (`/plugin marketplace add https://<your-host>/<org>/myco-notes.git`).
+- Codex and other agents: link or copy `skills/myco-notes/` into the agent's skills folder (see the main README).
 - Mirror and restore drill still apply: the hosting service is one copy, not a backup. Keep an independent snapshot (`tools/mirror-push`, `tools/restore-drill`).
 
 ## 7. What CI checks (`tools/ci-check`)
 1. Every line the pull request adds is scanned with the same rules as the local hook (`tools/secret-scan`).
-2. `tools/notes-lint.py`: errors fail the check; warnings do not, unless you set `CI_LINT_STRICT=1` in `.living-notes.conf`.
+2. `tools/notes-lint.py`: errors fail the check; warnings do not, unless you set `CI_LINT_STRICT=1` in `.myco-notes.conf`.
 
 Run it locally the same way: `tools/ci-check origin/main`.

@@ -1,12 +1,25 @@
-# Living Notes
+# Myco Notes
+
+*Linked, versioned, secret-free project notes for you and your AI agents.*
 
 A method, a starter tree and a small set of tools for keeping a project's knowledge **accurate, secure, versioned and connected**, for engineers who run large or long projects (infrastructure, platforms, data and ML systems, research, hardware) alone, in teams, or together with AI coding agents.
 
 It started as the operational memory of a long-running, AI-operated engineering project, where the notes had to work for an operator that forgets everything between sessions. If the notes are good enough for that operator, they are good enough for a new teammate, an auditor, or you next year.
 
-Agent-neutral: the skill follows the open [Agent Skills](https://agentskills.io/specification) format, so Claude Code, OpenAI Codex and other agents that read `SKILL.md` and `AGENTS.md` can use it. Everything it needs is inside one folder, `skills/living-notes/`.
+Agent-neutral: the skill follows the open [Agent Skills](https://agentskills.io/specification) format, so Claude Code, OpenAI Codex and other agents that read `SKILL.md` and `AGENTS.md` can use it. Everything it needs is inside one folder, `skills/myco-notes/`.
 
-## What you get (all paths inside `skills/living-notes/`)
+## Why "Myco"
+Mycelium is the underground network of threads (hyphae) that connects the trees of a forest, carries what one needs to another, and breaks down what has died. The notes work the same way: every note is a thread, the references between them are the network, and nothing is lost: old statements are superseded and kept. The vocabulary is used lightly:
+
+| In nature | Here |
+|---|---|
+| Spawn (the starter culture) | the `template/` and `tools/bootstrap` |
+| Substrate (what it grows in) | your notes repository |
+| Hyphae (the threads) | the notes and the references between them (backlinks, "who mentions whom") |
+| Fruiting body (the visible part) | the generated notes map |
+| Decomposition | superseding and archiving stale statements |
+
+## What you get (all paths inside `skills/myco-notes/`)
 
 | Part | What it is |
 |---|---|
@@ -27,28 +40,28 @@ At the repository root: `.claude-plugin/` (Claude Code plugin and marketplace ma
 
 ### Claude Code (one command)
 ```
-/plugin marketplace add LuzianMe/living-notes
-/plugin install living-notes@living-notes
+/plugin marketplace add LuzianMe/myco-notes
+/plugin install myco-notes@myco-notes
 ```
-Then ask Claude to "start a living notes tree for my project", "update the notes", "audit the notes" or "commit the notes".
+Then ask Claude to "start a Myco Notes tree for my project", "update the notes", "audit the notes" or "commit the notes".
 
 ### OpenAI Codex
 Codex reads skills from `~/.agents/skills` (all your projects) or `.agents/skills` inside a repository, and follows symlinks. Clone the kit once and link the skill folder:
 ```bash
-git clone https://github.com/LuzianMe/living-notes.git ~/.agents/living-notes-kit
+git clone https://github.com/LuzianMe/myco-notes.git ~/.agents/myco-notes-kit
 mkdir -p ~/.agents/skills
-ln -s ~/.agents/living-notes-kit/skills/living-notes ~/.agents/skills/living-notes
+ln -s ~/.agents/myco-notes-kit/skills/myco-notes ~/.agents/skills/myco-notes
 ```
 Restart Codex if the skill does not appear, then use the same requests as above. (Written from the Codex documentation; the author has not yet run it under Codex, so please report anything that differs.)
 
 ### Other agents
-Any agent that supports Agent Skills: copy or link `skills/living-notes/` into its skills folder; the folder is self-contained. Any other agent: clone the repository and tell it to read `skills/living-notes/SKILL.md` as a procedure; once a notes tree exists, point it at the tree's `AGENTS.md`.
+Any agent that supports Agent Skills: copy or link `skills/myco-notes/` into its skills folder; the folder is self-contained. Any other agent: clone the repository and tell it to read `skills/myco-notes/SKILL.md` as a procedure; once a notes tree exists, point it at the tree's `AGENTS.md`.
 
 ### No agent
 Use the tools directly (below). The method is plain Markdown plus git.
 
 ## Sharing with a team
-Put the notes tree in a private repository on GitHub, GitHub Enterprise or any git host. A bootstrapped tree already contains a pull-request check (`.github/workflows/notes-check.yml`), a CODEOWNERS file and a PR template. Teammates run `tools/setup-clone` once after cloning and change notes with `tools/notes-commit --branch NAME --pr "message"`. Set-up, branch protection and conflict handling: `skills/living-notes/docs/TEAM.md`.
+Put the notes tree in a private repository on GitHub, GitHub Enterprise or any git host. A bootstrapped tree already contains a pull-request check (`.github/workflows/notes-check.yml`), a CODEOWNERS file and a PR template. Teammates run `tools/setup-clone` once after cloning and change notes with `tools/notes-commit --branch NAME --pr "message"`. Set-up, branch protection and conflict handling: `skills/myco-notes/docs/TEAM.md`.
 
 ## Platform support
 Linux, macOS and Windows (native, Git for Windows, or WSL). The tools are Python 3.8+ (standard library only) plus git; each has a launcher for every shell. In Git Bash, WSL, macOS and Linux write `tools/notes-commit ...`; in cmd or PowerShell write `tools\notes-commit ...` (a `.cmd` launcher) or `python tools\notes_commit.py ...`. Remote mirrors over ssh need rsync and ssh; a `git:URL` mirror target needs neither. The kit's tests run on all three systems in GitHub Actions.
@@ -56,8 +69,8 @@ Linux, macOS and Windows (native, Git for Windows, or WSL). The tools are Python
 ## Quick start (without an agent)
 
 ```bash
-git clone https://github.com/LuzianMe/living-notes.git
-cd living-notes/skills/living-notes
+git clone https://github.com/LuzianMe/myco-notes.git
+cd myco-notes/skills/myco-notes
 tools/bootstrap ~/projects/my-project-notes --name "My Project" --owner "Your Name" --tz "UTC"
 cd ~/projects/my-project-notes
 # edit notes/working-agreement.md and notes/state.md, then:

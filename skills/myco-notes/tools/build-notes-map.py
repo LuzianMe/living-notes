@@ -9,7 +9,7 @@ What it produces
   raw/<slug>.md     the original files
 Relations are file-name mentions: a note that writes `runbook.md` in backticks (or plain text) mentions that note.
 It refuses to build if any note contains a secret-looking string (publication gate).
-Optional config: .living-notes-map.json  {"title": "...", "groups": [{"id","name","blurb","prefixes":["notes/plans/"]}], "hints": {"notes/state.md": "one line"}}
+Optional config: .myco-notes-map.json  {"title": "...", "groups": [{"id","name","blurb","prefixes":["notes/plans/"]}], "hints": {"notes/state.md": "one line"}}
 Needs only the Python standard library; if the 'markdown' package is installed pages are rendered nicely, otherwise as preformatted text.
 """
 import argparse, datetime, html, json, os, re, shutil, subprocess, sys
@@ -64,7 +64,7 @@ def main():
     root = sh(["git", "rev-parse", "--show-toplevel"], a.root).strip() or os.path.abspath(a.root)
     out = a.out or os.path.join(root, "notes-map")
     cfg = {}
-    cp = os.path.join(root, ".living-notes-map.json")
+    cp = os.path.join(root, ".myco-notes-map.json")
     if os.path.exists(cp):
         cfg = json.load(open(cp, encoding="utf-8"))
     title = cfg.get("title") or (os.path.basename(root) + " notes")

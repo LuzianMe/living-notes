@@ -8,7 +8,7 @@
 Flags: private-key blocks, cloud/API token prefixes, and names such as password/passphrase/secret/token/api_key followed by
 ':' or '=' and a long literal value (20+ characters). Prompts like printf "...%s" and references like "!secret name" do not
 match. Pattern-based: an unusual format can pass, so treat this as a safety net, not a guarantee.
-Allow list: regular expressions (one per line) in the file named by SECRET_ALLOW_FILE (default .living-notes-secret-allow).
+Allow list: regular expressions (one per line) in the file named by SECRET_ALLOW_FILE (default .myco-notes-secret-allow).
 Exit: 0 nothing found, 1 hits (printed to stdout, first 80 characters of each line).
 """
 import os
@@ -16,7 +16,7 @@ import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import _ln  # noqa: E402
+import _myco  # noqa: E402
 
 PATTERNS = [
     r"BEGIN [A-Z ]*PRIVATE KEY",
@@ -42,10 +42,10 @@ def scan(diff_text, allow_regexes=()):
 
 
 def main():
-    _ln.utf8_console()
-    root = _ln.toplevel(os.getcwd()) or os.getcwd()
-    conf = _ln.load_conf(root)
-    allow_file = os.path.join(root, conf.get("SECRET_ALLOW_FILE") or ".living-notes-secret-allow")
+    _myco.utf8_console()
+    root = _myco.toplevel(os.getcwd()) or os.getcwd()
+    conf = _myco.load_conf(root)
+    allow_file = os.path.join(root, conf.get("SECRET_ALLOW_FILE") or ".myco-notes-secret-allow")
     allow = []
     if os.path.isfile(allow_file):
         with open(allow_file, encoding="utf-8") as fh:

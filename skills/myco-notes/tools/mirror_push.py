@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """mirror-push: keep a second copy of the notes repository on another machine or disk.
 
-Target comes from MIRROR_TARGET in .living-notes.conf:
+Target comes from MIRROR_TARGET in .myco-notes.conf:
   /path/or/C:\\path     a local directory: the whole working copy including .git is copied and the copy is made equal
                         (files that no longer exist are removed there)
   git:URL               a git remote (any URL git understands, including a bare repository on another disk or server):
@@ -20,7 +20,7 @@ import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-import _ln  # noqa: E402
+import _myco  # noqa: E402
 
 
 def _rm(path):
@@ -79,17 +79,17 @@ def dir_size(path):
 
 
 def main():
-    _ln.utf8_console()
-    root = _ln.toplevel(HERE)
+    _myco.utf8_console()
+    root = _myco.toplevel(HERE)
     if not root:
         print("mirror: not inside a git repository", file=sys.stderr)
         return 1
     os.chdir(root)
-    conf = _ln.load_conf(root)
+    conf = _myco.load_conf(root)
     target = os.path.expanduser(os.path.expandvars(conf.get("MIRROR_TARGET", "")))
     post = [c for c in conf.get("POST_PUSH_CMDS", "").splitlines() if c.strip()]
     if not target:
-        print("mirror: MIRROR_TARGET not set in .living-notes.conf, skipped")
+        print("mirror: MIRROR_TARGET not set in .myco-notes.conf, skipped")
         return 0
 
     if target.startswith("git:"):
@@ -113,7 +113,7 @@ def main():
 
     for c in post:
         try:
-            r = _ln.run_shell(c, root, timeout=120)
+            r = _myco.run_shell(c, root, timeout=120)
             print("\n".join((r.stdout + r.stderr).strip().splitlines()[-2:]))
         except Exception as e:  # a failing publish never breaks the push
             print(f"mirror: post-push command failed ({e})")
@@ -122,7 +122,7 @@ def main():
             fh.write(str(int(time.time())) + "\n")
     except OSError:
         pass
-    print(f"mirror: pushed {_ln.human_size(dir_size(root))} to {conf.get('MIRROR_TARGET')}")
+    print(f"mirror: pushed {_myco.human_size(dir_size(root))} to {conf.get('MIRROR_TARGET')}")
     return 0
 
 

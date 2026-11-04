@@ -1,4 +1,4 @@
-# Living Notes: the method
+# Myco Notes: the method
 
 Version 2 (general edition), 2026-11-03. It is project-independent and is written for engineers and teams (and for AI coding agents working with them) who run long, large or fast-changing projects: infrastructure, software platforms, data and ML systems, research, hardware, operations. It is meant as the specification from which a skill, a template repository or a team convention can be built.
 
@@ -365,12 +365,12 @@ Design rules for the tools: idempotent; skip quietly when nothing changed (hash 
 
 ## 17. Where the tools in this kit implement the method
 
-Paths are relative to the kit, which is the skill folder `skills/living-notes/` (it is self-contained: `docs/`, `template/`, `tools/` and `SKILL.md` travel together).
+Paths are relative to the kit, which is the skill folder `skills/myco-notes/` (it is self-contained: `docs/`, `template/`, `tools/` and `SKILL.md` travel together).
 
 | Method element | Tool or file |
 |---|---|
 | Bootstrap a tree (11.5) | `tools/bootstrap`, `template/` |
-| Described commits, syntax checks, synced executed copies (7) | `tools/notes-commit`, `.living-notes.conf` |
+| Described commits, syntax checks, synced executed copies (7) | `tools/notes-commit`, `.myco-notes.conf` |
 | Secret refusal at commit time (8.2) | `tools/hooks/pre-commit` (versioned; activated by `git config core.hooksPath tools/hooks`), rules in `tools/secret-scan` |
 | Server-side gate that a contributor cannot bypass (8.2, 18) | `tools/ci-check`, `template/.github/workflows/notes-check.yml` |
 | Per-clone setup, branches and pull requests (18) | `tools/setup-clone`, `tools/notes-commit --branch/--push/--pr`, `docs/TEAM.md` |

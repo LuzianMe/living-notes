@@ -9,7 +9,7 @@ bad()  { echo "  FAIL $1"; fail=$((fail+1)); }
 chk()  { if eval "$2" >/dev/null 2>&1; then ok "$1"; else bad "$1"; fi; }
 export GIT_AUTHOR_NAME=Test GIT_AUTHOR_EMAIL=t@example.com GIT_COMMITTER_NAME=Test GIT_COMMITTER_EMAIL=t@example.com
 
-skill="$kit/skills/living-notes"
+skill="$kit/skills/myco-notes"
 
 echo "plugin manifests"
 chk "plugin.json is valid JSON"         "python3 -c \"import json;json.load(open('$kit/.claude-plugin/plugin.json'))\""
@@ -55,7 +55,7 @@ echo "bootstrap (from the copied skill folder only)"
 "$kit/tools/bootstrap" "$tmp/proj" --name "Demo" --owner "Tester" --tz "UTC" >/dev/null 2>&1
 cd "$tmp/proj" || exit 1
 chk "baseline commit exists"            "git log --oneline | grep -q Baseline"
-chk "placeholders filled"               "! grep -rq '{{' AGENTS.md notes .living-notes.conf"
+chk "placeholders filled"               "! grep -rq '{{' AGENTS.md notes .myco-notes.conf"
 chk "hooks path is versioned"           "[ \"\$(git config core.hooksPath)\" = tools/hooks ]"
 chk "bootstrap not copied into tree" "[ ! -e tools/bootstrap ]"
 
@@ -96,7 +96,7 @@ chk "map refuses a secret"              "! python3 tools/build-notes-map.py"
 rm -f notes/leak.md
 
 echo "mirror and restore drill"
-sed "s|^MIRROR_TARGET=.*|MIRROR_TARGET=\"$tmp/mirror\"|" .living-notes.conf > .living-notes.conf.new && mv .living-notes.conf.new .living-notes.conf
+sed "s|^MIRROR_TARGET=.*|MIRROR_TARGET=\"$tmp/mirror\"|" .myco-notes.conf > .myco-notes.conf.new && mv .myco-notes.conf.new .myco-notes.conf
 git add -A; git commit -q -m "Configure mirror"
 chk "mirror push"                       "tools/mirror-push | grep -q 'mirror: pushed'"
 chk "mirror contains .git"              "[ -d $tmp/mirror/.git ]"

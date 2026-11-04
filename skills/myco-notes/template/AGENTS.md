@@ -1,6 +1,6 @@
 # {{PROJECT_NAME}}: start here (entry point for humans and AI agents)
 
-This repository holds the **living notes** of {{PROJECT_NAME}}: the single source of truth for its current state, procedures, decisions and lessons. Read this file first, in any session, from any starting folder.
+This repository holds the **notes** of {{PROJECT_NAME}}: the single source of truth for its current state, procedures, decisions and lessons. Read this file first, in any session, from any starting folder.
 
 > Claude Code reads `CLAUDE.md`; Codex and many other agents read `AGENTS.md`. Keep this file as the real content and make `CLAUDE.md` contain only the line `@AGENTS.md` (or a symlink). If your agent looks for another filename, make that file a one-line pointer to this one (the exact syntax depends on the agent). Keep this file small: some agents cap the instructions they load (Codex: 32 KiB in total).
 
@@ -24,7 +24,7 @@ This repository holds the **living notes** of {{PROJECT_NAME}}: the single sourc
 - `tools/build-notes-map.py` : generate the navigable map with backlinks and history.
 - `tools/mirror-push`, `tools/restore-drill` : second copy and proof it can be restored.
 - Shared repository: run `tools/setup-clone` once after cloning; change notes on a branch (`tools/notes-commit --branch NAME --pr "message"`); CI (`tools/ci-check`) must pass; see `docs/TEAM.md`.
-- Method: `docs/METHODOLOGY.md` (if present) or the Living Notes method it was copied from.
+- Method: `docs/METHODOLOGY.md` (if present) or the Myco Notes method it was copied from.
 
 ## Project facts an agent needs immediately
 - Time zone for all dates: {{TIMEZONE}}.

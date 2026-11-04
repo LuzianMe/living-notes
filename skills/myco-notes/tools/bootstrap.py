@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""bootstrap: create a new notes repository from the Living Notes template.
+"""bootstrap: create a new notes repository from the Myco Notes template.
 
   tools/bootstrap <target-dir> --name "Project name" [--owner "Name"] [--tz "MST (UTC-7)"] [--no-commit]
 
@@ -16,13 +16,13 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 KIT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
-import _ln  # noqa: E402
+import _myco  # noqa: E402
 
 NOT_COPIED = {"bootstrap", "bootstrap.cmd", "bootstrap.py", "__pycache__"}
 
 
 def main():
-    _ln.utf8_console()
+    _myco.utf8_console()
     ap = argparse.ArgumentParser(prog="bootstrap", add_help=True)
     ap.add_argument("target")
     ap.add_argument("--name", required=True)
@@ -30,7 +30,7 @@ def main():
     ap.add_argument("--tz", default="UTC")
     ap.add_argument("--no-commit", action="store_true")
     a = ap.parse_args()
-    owner = a.owner or _ln.git("config", "user.name").stdout.strip() or "owner"
+    owner = a.owner or _myco.git("config", "user.name").stdout.strip() or "owner"
 
     target = os.path.abspath(a.target)
     if os.path.exists(target) and os.listdir(target):
@@ -51,7 +51,7 @@ def main():
     for dp, dn, fn in os.walk(target):
         dn[:] = [d for d in dn if d != ".git"]
         for f in fn:
-            if f.endswith(".md") or f == ".living-notes.conf":
+            if f.endswith(".md") or f == ".myco-notes.conf":
                 p = os.path.join(dp, f)
                 with open(p, encoding="utf-8", newline="") as fh:
                     s = fh.read()
@@ -60,7 +60,7 @@ def main():
                 with open(p, "w", encoding="utf-8", newline="") as fh:
                     fh.write(s)
 
-    if not _ln.IS_WINDOWS:
+    if not _myco.IS_WINDOWS:
         for d in ("tools", os.path.join("tools", "hooks")):
             full = os.path.join(target, d)
             for f in os.listdir(full):
@@ -68,22 +68,22 @@ def main():
                 if os.path.isfile(p):
                     os.chmod(p, os.stat(p).st_mode | 0o111)
 
-    if _ln.git("-C", target, "init", "-q", "-b", "main").returncode != 0:  # git older than 2.28
-        _ln.git("-C", target, "init", "-q")
-        _ln.git("-C", target, "symbolic-ref", "HEAD", "refs/heads/main")
-    _ln.git("-C", target, "config", "core.hooksPath", "tools/hooks")
+    if _myco.git("-C", target, "init", "-q", "-b", "main").returncode != 0:  # git older than 2.28
+        _myco.git("-C", target, "init", "-q")
+        _myco.git("-C", target, "symbolic-ref", "HEAD", "refs/heads/main")
+    _myco.git("-C", target, "config", "core.hooksPath", "tools/hooks")
     print(f"bootstrap: created {target}")
     if not a.no_commit:
-        _ln.git("-C", target, "add", "-A")
-        r = subprocess.run(["git", "-C", target, "commit", "-q", "-m", "Baseline: notes tree created from the Living Notes template"], capture_output=True, text=True, encoding="utf-8", errors="replace")
+        _myco.git("-C", target, "add", "-A")
+        r = subprocess.run(["git", "-C", target, "commit", "-q", "-m", "Baseline: notes tree created from the Myco Notes template"], capture_output=True, text=True, encoding="utf-8", errors="replace")
         if r.returncode:
             print(f"bootstrap: baseline commit failed ({r.stderr.strip()}); set git user.name and user.email, then commit", file=sys.stderr)
         else:
-            print(_ln.git("-C", target, "log", "--oneline", "-1").stdout.strip())
+            print(_myco.git("-C", target, "log", "--oneline", "-1").stdout.strip())
     print("""
 Next steps:
   1. Edit notes/working-agreement.md and notes/state.md (headline facts, components).
-  2. Set MIRROR_TARGET in .living-notes.conf and run tools/mirror-push (then a timer every few hours).
+  2. Set MIRROR_TARGET in .myco-notes.conf and run tools/mirror-push (then a timer every few hours).
   3. Set up an independent encrypted snapshot of the mirror and run tools/restore-drill once.
   4. python3 tools/build-notes-map.py   (navigable map with backlinks and history)
   5. Commit after every meaningful update:  tools/notes-commit "what changed and why"

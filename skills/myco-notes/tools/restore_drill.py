@@ -15,7 +15,7 @@ import zipfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-import _ln  # noqa: E402
+import _myco  # noqa: E402
 
 
 def extract(archive, dest):
@@ -45,12 +45,12 @@ def find_repo(src, depth=3):
 
 
 def main():
-    _ln.utf8_console()
+    _myco.utf8_console()
     if len(sys.argv) < 2:
         print("usage: restore-drill <restored dir | archive>", file=sys.stderr)
         return 2
     arg = sys.argv[1]
-    live = _ln.toplevel(HERE)
+    live = _myco.toplevel(HERE)
     tmp = None
     src = arg
     if os.path.isfile(arg):
@@ -63,7 +63,7 @@ def main():
         return 1
     rc = 0
     print(f"restored repository: {repo}")
-    r = _ln.git("-C", repo, "fsck", "--no-progress")
+    r = _myco.git("-C", repo, "fsck", "--no-progress")
     for line in (r.stdout + r.stderr).splitlines():
         if not line.startswith("dangling"):
             print(f"  fsck: {line}")
@@ -73,7 +73,7 @@ def main():
         print("  fsck: PROBLEMS")
         rc = 1
     print("  last commits:")
-    for line in _ln.git("-C", repo, "log", "--oneline", "-5").stdout.splitlines():
+    for line in _myco.git("-C", repo, "log", "--oneline", "-5").stdout.splitlines():
         print(f"    {line}")
     for f in ("AGENTS.md", "CLAUDE.md"):
         if os.path.isfile(os.path.join(repo, f)):
@@ -83,8 +83,8 @@ def main():
     else:
         print("  tracker MISSING")
         rc = 1
-    a = _ln.git("-C", repo, "rev-parse", "HEAD").stdout.strip()
-    b = _ln.git("-C", live, "rev-parse", "HEAD").stdout.strip() if live else ""
+    a = _myco.git("-C", repo, "rev-parse", "HEAD").stdout.strip()
+    b = _myco.git("-C", live, "rev-parse", "HEAD").stdout.strip() if live else ""
     if a == b:
         print(f"  restored HEAD equals live HEAD ({a})")
     else:

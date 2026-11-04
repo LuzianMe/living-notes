@@ -29,7 +29,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Set-Location skills/living-notes
+          Set-Location skills/myco-notes
           $o = (& .\tools\notes-commit --help) | Out-String
           if ($o -notmatch '--branch') { throw "PowerShell: .\tools\notes-commit did not run" }
           $o = (cmd /c "tools\notes-commit --help") | Out-String

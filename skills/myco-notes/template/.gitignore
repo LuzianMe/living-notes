@@ -18,4 +18,4 @@ __pycache__/
 *.pem
 *.key
 *.kdbx
-.living-notes.local
+.myco-notes.local
