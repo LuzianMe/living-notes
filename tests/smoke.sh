@@ -9,6 +9,8 @@ bad()  { echo "  FAIL $1"; fail=$((fail+1)); }
 chk()  { if eval "$2" >/dev/null 2>&1; then ok "$1"; else bad "$1"; fi; }
 export GIT_AUTHOR_NAME=Test GIT_AUTHOR_EMAIL=t@example.com GIT_COMMITTER_NAME=Test GIT_COMMITTER_EMAIL=t@example.com
 
+skill="$kit/skills/living-notes"
+
 echo "plugin manifests"
 chk "plugin.json is valid JSON"         "python3 -c \"import json;json.load(open('$kit/.claude-plugin/plugin.json'))\""
 chk "marketplace.json is valid JSON"    "python3 -c \"import json;json.load(open('$kit/.claude-plugin/marketplace.json'))\""
@@ -17,10 +19,39 @@ import json
 a=json.load(open('$kit/.claude-plugin/plugin.json'));b=json.load(open('$kit/.claude-plugin/marketplace.json'))
 assert a['name']==b['plugins'][0]['name'] and 'version' in a and b['plugins'][0]['source'] in ('./', '.')
 PY"
-chk "skill file has matching name"      "head -5 $kit/skills/living-notes/SKILL.md | grep -q '^name: living-notes'"
-chk "marketplace source resolves to the plugin root" "[ -f $kit/.claude-plugin/plugin.json ] && [ -d $kit/skills/living-notes ]"
+chk "marketplace source resolves to the plugin root" "[ -f $kit/.claude-plugin/plugin.json ] && [ -d $skill ]"
+chk "skill version equals plugin version" "python3 - <<PY
+import json,re
+v=json.load(open('$kit/.claude-plugin/plugin.json'))['version']
+t=open('$skill/SKILL.md').read().split('---')[1]
+assert re.search(r'version:\s*\"?'+re.escape(v)+r'\"?\s*\$', t, re.M), 'SKILL.md metadata.version differs from plugin.json'
+PY"
 
-echo "bootstrap"
+echo "agent skill (Agent Skills specification)"
+chk "frontmatter follows the specification" "python3 - <<PY
+import re,os
+t=open('$skill/SKILL.md').read(); fm=t.split('---')[1]
+get=lambda k: (re.search(r'^'+k+r':\s*(.+)\$', fm, re.M) or [None,None])[1]
+name=get('name'); desc=get('description'); comp=get('compatibility')
+assert name==os.path.basename('$skill'), 'name must equal the folder name'
+assert re.fullmatch(r'[a-z0-9]+(-[a-z0-9]+)*', name) and len(name)<=64
+assert desc and len(desc)<=1024, 'description missing or over 1024 characters'
+assert comp is None or len(comp)<=500
+assert t.count(chr(10))<500, 'SKILL.md should stay under 500 lines'
+PY"
+chk "SKILL.md needs no CLAUDE_PLUGIN_ROOT" "! grep -q 'CLAUDE_PLUGIN_ROOT' $skill/SKILL.md"
+chk "every path SKILL.md names exists in the skill folder" "python3 - <<PY
+import re,os
+t=open('$skill/SKILL.md').read()
+for m in set(re.findall(r'<KIT>/((?:tools|docs|template)[A-Za-z0-9_./-]*)', t)):
+    p=os.path.join('$skill', m.rstrip('/.,)'))
+    assert os.path.exists(p), 'missing '+m
+PY"
+
+# From here on the kit is a COPY of the skill folder alone: proves the skill is self-contained (what a skill-only installer delivers).
+cp -a "$skill" "$tmp/skill-only"; kit="$tmp/skill-only"
+
+echo "bootstrap (from the copied skill folder only)"
 "$kit/tools/bootstrap.sh" "$tmp/proj" --name "Demo" --owner "Tester" --tz "UTC" >/dev/null 2>&1
 cd "$tmp/proj" || exit 1
 chk "baseline commit exists"            "git log --oneline | grep -q Baseline"

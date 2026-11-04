@@ -1,15 +1,22 @@
 ---
 name: living-notes
 description: Keep a project's knowledge in a versioned, secret-free, cross-referenced Markdown notes tree that stays accurate. Use when a change was just made to a system or codebase and the notes must be updated and committed; when asked to "update the notes", "document this", "sync", "audit the notes" or "commit the notes"; when merging another session's handoff; or when asked to start a notes tree for a new project.
+license: Apache-2.0
+compatibility: Needs bash, git, python 3.8+ and rsync (macOS, Linux, or Windows through WSL). Agent-neutral; any coding agent that reads SKILL.md or AGENTS.md can use it.
+metadata:
+  version: "0.2.0"
 ---
 
 # Living Notes
 
-**Kit location (KIT):** `${CLAUDE_PLUGIN_ROOT}` when this skill is installed as a plugin; otherwise the folder where the Living Notes repository was cloned. The kit holds `docs/METHODOLOGY.md`, `template/` and `tools/`; a project created with `bootstrap.sh` gets its own copy of `tools/` and `docs/`, and capture/audit steps below use the **project's** `tools/`.
+**Kit location (KIT):** the folder that contains this `SKILL.md`. Resolve it from the path this skill was loaded from; it holds `docs/METHODOLOGY.md`, `template/` and `tools/`, and nothing else is needed. If you cannot tell where this file lives, look for a folder containing both `tools/bootstrap.sh` and `docs/METHODOLOGY.md`; if there is none, ask the user. A project created with `bootstrap.sh` gets its own copy of `tools/` and `docs/`, and the capture/audit steps below use the **project's** `tools/`.
 
 Operational memory for long or large projects (infrastructure, platforms, data/ML systems, research, hardware): a Markdown tree with fixed file roles, dated evidence-based entries, explicit relations between files, a ledger of derived copies, git versioning, secret refusal and layered backup. Full method: `<KIT>/docs/METHODOLOGY.md` (also copied into each project). Starter files: `<KIT>/template/`. Tools: `<KIT>/tools/`.
 
 Works with any agent or none. The notes root has an entry point (`AGENTS.md`, or `CLAUDE.md` containing `@AGENTS.md`); read it first.
+
+## Execution environment (check before you start)
+Find out what this session may do: write files, run git, reach the network, run the live system's commands. If something is blocked, do not work around it: record the limit, mark every fact you could not check "not verified", put the missing step under Pending in the sync tracker, and tell the user exactly what a human must run. Never claim a check passed without evidence from this session.
 
 ## Modes (pick the one that fits the request)
 
@@ -36,6 +43,10 @@ Read the handoff in `notes/plans/`, check `git status` and last-modified times f
 
 ### 5. Restore drill / review
 `tools/restore-drill.sh <restored dir or archive>`; or run `tools/notes-lint.py` and report the weak spots found.
+
+### 6. Resume and hand off (start and end of a session)
+**Resume:** read the entry point, `notes/working-agreement.md`, the pending list in `notes/sync-tracker.md`, the newest handoff in `notes/plans/` and `git log -5`; say in three lines what is current, what is unfinished and what is waiting on a person. Do not list pending items to the owner unless asked or unless one blocks the task.
+**Hand off:** before the session ends, commit, add the sync-log line, and write anything unfinished or undecided under Pending (or a handoff file in `notes/plans/` when another person or agent will continue), including the exact next command.
 
 ## Guard rails (always)
 - **No secrets** in notes, commits, logs or chat: write where a secret lives, never its value. The commit hook and the map builder refuse obvious cases; do not rely on them.

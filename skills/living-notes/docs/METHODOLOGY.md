@@ -365,6 +365,8 @@ Design rules for the tools: idempotent; skip quietly when nothing changed (hash 
 
 ## 17. Where the tools in this kit implement the method
 
+Paths are relative to the kit, which is the skill folder `skills/living-notes/` (it is self-contained: `docs/`, `template/`, `tools/` and `SKILL.md` travel together).
+
 | Method element | Tool or file |
 |---|---|
 | Bootstrap a tree (11.5) | `tools/bootstrap.sh`, `template/` |
@@ -375,4 +377,4 @@ Design rules for the tools: idempotent; skip quietly when nothing changed (hash 
 | Mirror (8.4) | `tools/mirror-push.sh` |
 | Restore drill (8.4, 11.6) | `tools/restore-drill.sh` |
 | Entry point for agents (12) | `template/AGENTS.md` (+ `CLAUDE.md` containing `@AGENTS.md`) |
-| Agent skill | `skills/living-notes/SKILL.md` (plugin manifests in `.claude-plugin/`) |
+| Agent skill | `SKILL.md` (Agent Skills format, read by Claude Code, Codex and other agents; Claude Code plugin manifests in `.claude-plugin/` at the repository root) |
