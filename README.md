@@ -84,9 +84,10 @@ Put the notes repository where the agent works and point it at `AGENTS.md` (Clau
 ## Tests
 
 ```bash
-tests/smoke.sh
+python3 tests/native.py     # Linux, macOS, Windows: no bash needed, runs the real launchers
+bash tests/smoke.sh         # Linux and macOS: the same ground plus manifest and specification checks
 ```
-Runs automatically on Linux and macOS for every push (GitHub Actions). Checks the plugin manifests and the skill file against the Agent Skills specification, then copies **only** the skill folder to a temporary place and, from that copy, bootstraps a tree and exercises commit, hook, lint, map, mirror and restore drill.
+Both run automatically for every push (GitHub Actions: `native.py` on Linux, macOS and Windows, `smoke.sh` on Linux and macOS). They check the plugin manifests and the skill file against the Agent Skills specification, then copy **only** the skill folder to a temporary place and, from that copy, bootstrap a tree and exercise commit, hook, lint, map, mirror, restore drill and the team workflow (branch, push, CI check, per-clone setup). The team workflow has also been run live against GitHub (pull request that passes, pull request with a planted fake secret that fails).
 
 ## Contributing
 

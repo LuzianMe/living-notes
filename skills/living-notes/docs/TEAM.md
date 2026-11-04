@@ -9,9 +9,9 @@ The notes tree is a git repository, so a team shares it like code. This page is 
    git push -u origin main
    ```
 2. **Check that the workflow runs.** The tree already contains `.github/workflows/notes-check.yml`. Open a throw-away pull request and see the `notes-check` job pass. On GitHub Enterprise Server, change `runs-on:` to a runner label your instance has, and make sure `actions/checkout` is available there (mirror it or allow it).
-3. **Protect `main`** (Settings, Branches, add a rule for `main`):
+3. **Protect `main`** (Settings, Branches, add a rule for `main`). Note: on GitHub, branch protection for a *private* repository needs a paid plan (Pro for a personal account, Team or Enterprise for an organization); on a free personal account the API answers "Upgrade to GitHub Pro or make this repository public". Without it the check still runs and shows red or green on every pull request, but nothing stops a merge or a direct push, so agree the rule with the team:
    - require a pull request before merging, with at least 1 approval;
-   - require status checks to pass, and select `notes-check`;
+   - require status checks to pass, and select `notes-check` (it is the name of the job in the workflow; it appears in the list after the workflow has run once);
    - require review from Code Owners (after step 4);
    - block force pushes; optionally require linear history.
 4. **Name the reviewers.** Edit `.github/CODEOWNERS` (users or teams) and remove the leading `#` on the lines you want. Keep the working agreement and `tools/` under the maintainers.
