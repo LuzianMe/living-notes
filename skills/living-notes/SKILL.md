@@ -4,7 +4,7 @@ description: Keep a project's knowledge in a versioned, secret-free, cross-refer
 license: Apache-2.0
 compatibility: Needs bash, git, python 3.8+ and rsync (macOS, Linux, or Windows through WSL). Agent-neutral; any coding agent that reads SKILL.md or AGENTS.md can use it.
 metadata:
-  version: "0.2.0"
+  version: "0.3.0"
 ---
 
 # Living Notes
@@ -39,7 +39,7 @@ Read the pending list and every note; verify every stated fact live; correct sta
 `bash "<KIT>/tools/bootstrap.sh" <dir> --name "Project" --owner "Name" --tz "<zone>"`, then fill `notes/working-agreement.md` and `notes/state.md`, set `MIRROR_TARGET` in `.living-notes.conf`, run `tools/mirror-push.sh`, set up an independent encrypted snapshot of the mirror, run `tools/restore-drill.sh` once.
 
 ### 4. Merge (another session or person left a handoff)
-Read the handoff in `notes/plans/`, check `git status` and last-modified times for concurrent edits, merge each fact into its canonical file in small atomic edits (re-read before each write), then update the handoff's merge-status block.
+Read the handoff in `notes/plans/`, check `git status` and last-modified times for concurrent edits, merge each fact into its canonical file in small atomic edits (re-read before each write), then update the handoff's merge-status block. In a shared repository (several people or agents, a hosting service), work on a branch and open a pull request instead of committing to main: `tools/notes-commit --branch NAME --pr "message"`; CI (`tools/ci-check`) scans for secrets and lints; a human merges. Set-up and conflict handling: `<KIT>/docs/TEAM.md`.
 
 ### 5. Restore drill / review
 `tools/restore-drill.sh <restored dir or archive>`; or run `tools/notes-lint.py` and report the weak spots found.

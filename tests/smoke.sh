@@ -102,4 +102,23 @@ chk "mirror push"                       "tools/mirror-push.sh | grep -q 'mirror:
 chk "mirror contains .git"              "[ -d $tmp/mirror/.git ]"
 chk "restore drill passes"              "tools/restore-drill.sh $tmp/mirror | grep -q 'fsck: OK'"
 
+echo "team setup (branches, CI check, per-clone setup)"
+chk "team files exist in the bootstrapped tree" "[ -f .github/workflows/notes-check.yml ] && [ -f .github/CODEOWNERS ] && [ -f .github/pull_request_template.md ] && [ -f docs/TEAM.md ]"
+chk "workflow runs tools/ci-check"      "grep -q 'tools/ci-check' .github/workflows/notes-check.yml"
+git clone -q "$tmp/proj" "$tmp/clone"
+chk "hooks path is not cloned"          "[ -z \"\$(git -C $tmp/clone config core.hooksPath)\" ]"
+chk "setup-clone activates the hook in a fresh clone" "(cd $tmp/clone && tools/setup-clone >/dev/null 2>&1 && [ \"\$(git config core.hooksPath)\" = tools/hooks ])"
+base="$(git rev-parse HEAD)"
+echo "- team test line" >> notes/plans/backlog.md
+chk "notes-commit --branch creates the branch" "tools/notes-commit --branch feat-a 'Team test change and why' >/dev/null && [ \"\$(git symbolic-ref --short HEAD)\" = feat-a ]"
+chk "ci-check passes on a clean change"  "tools/ci-check $base"
+printf 'api_key = AbCdEfGhIjKlMnOpQrStUvWx12\n' > notes/leak2.md
+git switch -q -c feat-leak; git add -A; git commit -q --no-verify -m "bypass the hook"
+chk "ci-check catches a secret committed with --no-verify" "! tools/ci-check $base"
+git switch -q main
+git init -q --bare "$tmp/remote.git"; git remote add origin "$tmp/remote.git"
+echo "- push test line" >> notes/plans/backlog.md
+chk "notes-commit --push publishes the branch" "tools/notes-commit --branch feat-b --push 'Push test and why' >/dev/null 2>&1 && git ls-remote --heads origin feat-b | grep -q feat-b"
+chk "--pr is documented in the usage"   "tools/notes-commit --help | grep -q -- '--pr'"
+
 echo; echo "passed $pass, failed $fail"; [ "$fail" = 0 ]

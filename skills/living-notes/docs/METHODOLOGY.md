@@ -371,10 +371,24 @@ Paths are relative to the kit, which is the skill folder `skills/living-notes/` 
 |---|---|
 | Bootstrap a tree (11.5) | `tools/bootstrap.sh`, `template/` |
 | Described commits, syntax checks, synced executed copies (7) | `tools/notes-commit`, `.living-notes.conf` |
-| Secret refusal at commit time (8.2) | `tools/hooks/pre-commit` (versioned; activated by `git config core.hooksPath tools/hooks`) |
+| Secret refusal at commit time (8.2) | `tools/hooks/pre-commit` (versioned; activated by `git config core.hooksPath tools/hooks`), rules in `tools/secret-scan` |
+| Server-side gate that a contributor cannot bypass (8.2, 18) | `tools/ci-check`, `template/.github/workflows/notes-check.yml` |
+| Per-clone setup, branches and pull requests (18) | `tools/setup-clone`, `tools/notes-commit --branch/--push/--pr`, `docs/TEAM.md` |
 | Lint: references, numbering, freshness, due dates, ledger, secrets (9, 10) | `tools/notes-lint.py` |
 | Relation map, backlinks, history, publication gate (9, 8.2) | `tools/build-notes-map.py` |
 | Mirror (8.4) | `tools/mirror-push.sh` |
 | Restore drill (8.4, 11.6) | `tools/restore-drill.sh` |
 | Entry point for agents (12) | `template/AGENTS.md` (+ `CLAUDE.md` containing `@AGENTS.md`) |
 | Agent skill | `SKILL.md` (Agent Skills format, read by Claude Code, Codex and other agents; Claude Code plugin manifests in `.claude-plugin/` at the repository root) |
+
+## 18. Teams and shared hosting
+
+A notes tree is an ordinary git repository, so a team shares it the way it shares code: one private repository on a hosting service (GitHub, GitHub Enterprise, GitLab, a self-hosted server), every change on a branch, a pull request, a review, and an automated check before merging into the main branch.
+
+- **Local hooks are a convenience, the server check is the control.** A hook lives in each clone and can be skipped; the same secret scan and lint must also run on the server for every pull request, and be required before merge.
+- **Hook settings do not travel with a clone.** Each person runs the setup step once (`tools/setup-clone`).
+- **Branch per change, small and described.** Several people (or agents) writing the same two files, the master record and the sync log, will conflict; small pull requests, frequent merges and keeping both sides of an appended line resolve almost all of it.
+- **Roles.** A maintainer group reviews changes to the working agreement and the tools; everyone else may propose changes to the notes. An AI agent is a contributor: it works on a branch and opens a pull request; a human merges.
+- **Reading and writing through the hosting API instead of a clone** is fine for reading and for a one-line fix, but it skips the hook, the lint and the commit helper, and turns a multi-file update into many commits; keep it as the exception.
+
+Step-by-step set-up, branch protection and conflict handling are in `docs/TEAM.md`.

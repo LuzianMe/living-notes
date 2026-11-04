@@ -13,12 +13,13 @@ Agent-neutral: the skill follows the open [Agent Skills](https://agentskills.io/
 | `SKILL.md` | The skill: five working modes (capture, audit, bootstrap, merge, restore/review) plus resume/hand-off, guard rails and an execution-environment check. |
 | `docs/METHODOLOGY.md` | The full method: principles, file roles, entry formats, how to capture information, when to update, relations between files and datasets, git versioning, security, freshness, procedures, working with AI agents, anti-patterns. |
 | `template/` | A ready starter tree: entry point (`AGENTS.md` / `CLAUDE.md`), working agreement, master record, runbook with a lessons list, sync tracker (derived-copy ledger, dependency matrix, pending list, sync log), backlog, verification guide, artifact and archive folders, `.gitignore`, config. |
-| `tools/notes-commit` | One command to commit with a described message: syntax checks, optional AI co-author trailer, optional sync of executed files, optional mirror push, optional milestone tag. |
-| `tools/hooks/pre-commit` | Refuses commits whose added lines look like secrets (versioned; activated with `core.hooksPath`). |
+| `tools/notes-commit` | One command to commit with a described message: syntax checks, optional AI co-author trailer, optional sync of executed files, optional mirror push, optional milestone tag, and for teams `--branch`, `--push`, `--pr`. |
+| `tools/hooks/pre-commit`, `tools/secret-scan` | Refuse commits whose added lines look like secrets (versioned; activated with `core.hooksPath`; the same rules run in CI). |
 | `tools/notes-lint.py` | Finds missing references, duplicate heading numbers, stale "last updated" headers, passed follow-up dates, incomplete ledger rows and secrets. |
 | `tools/build-notes-map.py` | Builds a static, searchable map: notes grouped by purpose, **who mentions whom**, backlinks, per-note git history, recent commits. Refuses to build if a note contains a secret. |
 | `tools/mirror-push.sh`, `tools/restore-drill.sh` | A second copy of the repository, and proof that it can be restored. |
 | `tools/bootstrap.sh` | Creates a new notes repository from the template in one command. |
+| `tools/ci-check`, `tools/setup-clone`, `docs/TEAM.md`, `template/.github/` | Team use: a pull-request check (secret scan + lint), per-clone setup, CODEOWNERS and PR template, and the step-by-step guide for GitHub or GitHub Enterprise. |
 
 At the repository root: `.claude-plugin/` (Claude Code plugin and marketplace manifests), `tests/smoke.sh`, `examples/`, `LICENSE`, `NOTICE`.
 
@@ -45,6 +46,9 @@ Any agent that supports Agent Skills: copy or link `skills/living-notes/` into i
 
 ### No agent
 Use the tools directly (below). The method is plain Markdown plus git.
+
+## Sharing with a team
+Put the notes tree in a private repository on GitHub, GitHub Enterprise or any git host. A bootstrapped tree already contains a pull-request check (`.github/workflows/notes-check.yml`), a CODEOWNERS file and a PR template. Teammates run `tools/setup-clone` once after cloning and change notes with `tools/notes-commit --branch NAME --pr "message"`. Set-up, branch protection and conflict handling: `skills/living-notes/docs/TEAM.md`.
 
 ## Platform support
 macOS and Linux work as is. Windows works through WSL (the tools need bash, git, python 3.8+ and rsync). A native Windows port is not done.
@@ -82,7 +86,7 @@ Put the notes repository where the agent works and point it at `AGENTS.md` (Clau
 ```bash
 tests/smoke.sh
 ```
-Checks the plugin manifests and the skill file against the Agent Skills specification, then copies **only** the skill folder to a temporary place and, from that copy, bootstraps a tree and exercises commit, hook, lint, map, mirror and restore drill.
+Runs automatically on Linux and macOS for every push (GitHub Actions). Checks the plugin manifests and the skill file against the Agent Skills specification, then copies **only** the skill folder to a temporary place and, from that copy, bootstraps a tree and exercises commit, hook, lint, map, mirror and restore drill.
 
 ## Contributing
 

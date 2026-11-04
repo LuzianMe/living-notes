@@ -23,6 +23,7 @@ This repository holds the **living notes** of {{PROJECT_NAME}}: the single sourc
 - `tools/notes-lint.py` : reference, heading, freshness, ledger and secret checks.
 - `tools/build-notes-map.py` : generate the navigable map with backlinks and history.
 - `tools/mirror-push.sh`, `tools/restore-drill.sh` : second copy and proof it can be restored.
+- Shared repository: run `tools/setup-clone` once after cloning; change notes on a branch (`tools/notes-commit --branch NAME --pr "message"`); CI (`tools/ci-check`) must pass; see `docs/TEAM.md`.
 - Method: `docs/METHODOLOGY.md` (if present) or the Living Notes method it was copied from.
 
 ## Project facts an agent needs immediately

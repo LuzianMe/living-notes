@@ -186,7 +186,7 @@ def main():
     # orphans (info)
     entry = {"AGENTS.md", "CLAUDE.md", "README.md"}
     for rel in md_files:
-        if mentions[rel] == 0 and os.path.basename(rel) not in entry and not rel.startswith(("docs/", "template/")):
+        if mentions[rel] == 0 and os.path.basename(rel) not in entry and not rel.startswith((".github/", "docs/", "template/")):
             add("INFO", rel, 1, "no other note mentions this file by name")
 
     order = {"ERROR": 0, "WARN": 1, "INFO": 2}

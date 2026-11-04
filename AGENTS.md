@@ -5,7 +5,7 @@ This repository is a kit, not a notes tree. Do not confuse it with the notes tre
 ## Layout
 - `skills/living-notes/` : the whole product, **self-contained** (a skill-only installer delivers just this folder). `SKILL.md`, `tools/`, `docs/METHODOLOGY.md`, `template/`. Nothing in it may refer to files outside the folder or to an environment variable.
 - `.claude-plugin/` : Claude Code plugin and marketplace manifests (the plugin root is the repository root).
-- `tests/smoke.sh` : the test. Run it before every commit; all checks must pass.
+- `tests/smoke.sh` : the test. Run it before every commit; all checks must pass. `.github/workflows/test.yml` runs it on Linux and macOS for every push and pull request.
 - `examples/` : sample entries for readers.
 
 ## Rules
