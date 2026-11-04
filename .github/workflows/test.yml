@@ -25,3 +25,15 @@ jobs:
       - name: Smoke test (bash)
         if: runner.os != 'Windows'
         run: bash tests/smoke.sh
+      - name: Launchers typed the way users type them (PowerShell and cmd)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Set-Location skills/living-notes
+          $o = (& .\tools\notes-commit --help) | Out-String
+          if ($o -notmatch '--branch') { throw "PowerShell: .\tools\notes-commit did not run" }
+          $o = (cmd /c "tools\notes-commit --help") | Out-String
+          if ($o -notmatch '--branch') { throw "cmd: tools\notes-commit did not run" }
+          $o = (& .\tools\bootstrap --help) | Out-String
+          if ($o -notmatch 'target') { throw "PowerShell: .\tools\bootstrap did not run" }
+          "launchers OK in PowerShell and cmd"
